@@ -131,6 +131,18 @@ docker compose up -d
 docker compose logs -f bot
 ```
 
+### Serverga joylash
+
+VPS'ga o'rnatish bitta buyruq bilan:
+
+```bash
+git clone https://github.com/Doniyorbek2000/Pulbot.git /opt/pulbot
+cd /opt/pulbot && sudo ./deploy/deploy.sh install
+```
+
+Batafsil qo'llanma — o'rnatish, avtomatik deploy, zaxira nusxa va
+xavfsizlik sozlamalari: **[deploy/README.md](deploy/README.md)**
+
 ---
 
 ## Sozlamalar (`.env`)
