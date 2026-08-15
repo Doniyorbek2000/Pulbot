@@ -107,6 +107,22 @@ cp .env.example .env
 python -m bot
 ```
 
+### ⚠️ @BotFather'da majburiy sozlash
+
+Guruhda pullik rejim ishlashi uchun bot guruhdagi **barcha xabarlarni ko'rishi**
+kerak. Standart holatda Telegram buni taqiqlaydi:
+
+```
+@BotFather → /mybots → botingiz → Bot Settings → Group Privacy → Turn off
+```
+
+Bu qilinmasa bot guruhda faqat buyruqlarni ko'radi va hech kimdan pul yecha
+olmaydi. Shuningdek bot guruhda **admin** bo'lishi va **"Delete messages"**
+huquqiga ega bo'lishi kerak — aks holda to'lanmagan xabarni o'chira olmaydi.
+
+Kanallar uchun: kanal postlari ostidagi izohlar bog'langan muhokama guruhi
+orqali o'tadi, shuning uchun guruh mantiqi ular uchun ham to'liq ishlaydi.
+
 ### Docker orqali
 
 ```bash
@@ -202,6 +218,22 @@ python -m pytest -q
 ushlangan mablag'), narxlash (rejimlar, istisnolar, vaqt mintaqasi bilan
 jadval, limitlar, guruh kvotalari), escrow (javob/rad etish/muddat tugashi,
 pulning saqlanishi) va pul yechishning to'liq oqimi.
+
+---
+
+## Nimani bilib qo'yish kerak
+
+**Yulduzchani pulga aylantirish botning o'zida bo'lmaydi.** Foydalanuvchilar
+to'lagan yulduzchalar bot egasining Telegram hisobiga tushadi va ularni
+Telegram'ning o'z qoidalari bo'yicha (21 kundan keyin TON'ga yoki reklama
+uchun) yechib olasiz. Shuning uchun foydalanuvchiga to'lov **platformadan
+tashqarida** — karta, Payme, Click yoki USDT orqali qilinadi. Kod shu
+modelga qurilgan: so'rov avtomatik yaratiladi, tekshiriladi va mablag'
+ushlanadi, admin to'lovni amalga oshirib "to'landi" deb belgilaydi.
+
+Bu — vositachilik biznesining odatiy modeli, lekin buni oldindan hisobga
+olish kerak: sizda foydalanuvchilarga to'lash uchun aylanma mablag' bo'lishi
+va yulduzchalarni muntazam yechib turishingiz lozim.
 
 ---
 
