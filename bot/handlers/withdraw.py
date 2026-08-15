@@ -353,7 +353,7 @@ async def _alert_admins(
 
         builder = InlineKeyboardBuilder()
         builder.button(
-            text=translator("admin.withdrawals_btn", count=""),
+            text=translator("admin.open_request"),
             callback_data=AdminCB(action="wd_open", item_id=request.id),
         )
         await notify(bot, admin_id, text, builder.as_markup())

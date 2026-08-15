@@ -493,18 +493,43 @@ async def _render_withdrawal(
         risk=request.risk_score,
         flags=("⚑ " + ", ".join(flags)) if flags else "",
     )
-    text += f"\n\n💳 {request.payout_amount} {request.payout_currency}"
-    text += f"\n📌 {_(f'withdraw.status.{request.status}')}"
+    text += "\n\n" + _("admin.wd_payout", amount=request.payout_amount, currency=request.payout_currency)
+
+    # Admin qaror qabul qilishi uchun foydalanuvchining hozirgi hisobi
+    if target is not None:
+        row = await wallet.get_wallet(session, target.id)
+        text += "\n\n" + _(
+            "admin.wd_user_balance",
+            balance=fmt(row.balance_mxtr),
+            locked=fmt(row.locked_mxtr),
+            earned=fmt(row.total_earned_mxtr),
+            topup=fmt(row.total_topup_mxtr),
+        )
+
+    text += f"\n\n📌 {_(f'withdraw.status.{request.status}')}"
+    if request.external_ref:
+        text += f"\n🧾 <code>{request.external_ref}</code>"
 
     builder = InlineKeyboardBuilder()
-    if request.status == WithdrawStatus.PENDING:
-        builder.button(text=_("admin.approve_btn"), callback_data=AdminCB(action="wd_approve", item_id=request.id))
-        builder.button(text=_("admin.reject_btn"), callback_data=AdminCB(action="wd_reject", item_id=request.id))
     if request.status in WithdrawStatus.OPEN_STATES:
-        builder.button(text=_("admin.mark_paid_btn"), callback_data=AdminCB(action="wd_paid", item_id=request.id))
-        builder.button(text=_("admin.reject_btn"), callback_data=AdminCB(action="wd_reject", item_id=request.id))
+        # Asosiy amal: admin kartaga o'tkazdi -> shu tugmani bosadi
+        builder.button(
+            text=_("admin.mark_paid_btn"),
+            callback_data=AdminCB(action="wd_paid", item_id=request.id),
+        )
+        builder.adjust(1)
+        builder.row()
+        if request.status == WithdrawStatus.PENDING:
+            builder.button(
+                text=_("admin.approve_btn"),
+                callback_data=AdminCB(action="wd_approve", item_id=request.id),
+            )
+        builder.button(
+            text=_("admin.reject_btn"),
+            callback_data=AdminCB(action="wd_reject", item_id=request.id),
+        )
+    builder.row()
     builder.button(text=_("common.back"), callback_data=AdminCB(action="withdrawals"))
-    builder.adjust(2, 2, 1)
 
     if edit and isinstance(event, CallbackQuery):
         await safe_edit(event, text, builder.as_markup())
@@ -603,9 +628,93 @@ async def apply_reject(
 
 
 @router.callback_query(AdminCB.filter(F.action == "wd_paid"))
+async def confirm_paid_screen(
+    query: CallbackQuery,
+    callback_data: AdminCB,
+    session: AsyncSession,
+    user: User,
+    _: Translator,
+    fmt,
+) -> None:
+    """Tasdiqlashdan oldin oxirgi tekshiruv.
+
+    Bu amal qaytarilmaydi — foydalanuvchi hisobidan pul yechiladi, shuning
+    uchun tasodifiy bosishdan himoya qilinadi (lekin yozish talab qilinmaydi).
+    """
+    if not _guard(user):
+        await query.answer(_("error.no_access"), show_alert=True)
+        return
+
+    request = await session.get(Withdrawal, callback_data.item_id)
+    if request is None:
+        await query.answer(_("error.not_found"), show_alert=True)
+        return
+    if request.status not in WithdrawStatus.OPEN_STATES:
+        await query.answer(_("withdraw.cannot_cancel"), show_alert=True)
+        return
+
+    text = _(
+        "admin.confirm_paid",
+        id=request.id,
+        net=fmt(request.net_mxtr),
+        payout=f"{request.payout_amount} {request.payout_currency}",
+        destination=request.destination,
+        name=request.destination_name or "—",
+        amount=fmt(request.amount_mxtr),
+    )
+
+    builder = InlineKeyboardBuilder()
+    builder.button(
+        text=_("admin.paid_confirm_btn"),
+        callback_data=AdminCB(action="wd_paid_go", item_id=request.id),
+    )
+    builder.button(
+        text=_("admin.paid_with_ref_btn"),
+        callback_data=AdminCB(action="wd_paid_ref", item_id=request.id),
+    )
+    builder.button(
+        text=_("common.cancel"),
+        callback_data=AdminCB(action="wd_open", item_id=request.id),
+    )
+    builder.adjust(1)
+
+    await safe_edit(query, text, builder.as_markup())
+    await query.answer()
+
+
+@router.callback_query(AdminCB.filter(F.action == "wd_paid_go"))
+async def mark_paid_now(
+    query: CallbackQuery,
+    callback_data: AdminCB,
+    bot: Bot,
+    session: AsyncSession,
+    user: User,
+    _: Translator,
+    fmt,
+) -> None:
+    """Bir bosishda tasdiqlash: hisobdan pul yechiladi, foydalanuvchi xabardor qilinadi."""
+    if not _guard(user):
+        await query.answer(_("error.no_access"), show_alert=True)
+        return
+
+    request = await session.get(Withdrawal, callback_data.item_id)
+    if request is None:
+        await query.answer(_("error.not_found"), show_alert=True)
+        return
+
+    if not await _finish_payout(bot, session, request, user, _, external_ref=None):
+        await query.answer(_("withdraw.cannot_cancel"), show_alert=True)
+        return
+
+    await query.answer(_("admin.withdrawal_updated"))
+    await _render_withdrawal(query, session, request.id, _, fmt)
+
+
+@router.callback_query(AdminCB.filter(F.action == "wd_paid_ref"))
 async def ask_paid_ref(
     query: CallbackQuery, callback_data: AdminCB, state: FSMContext, user: User, _: Translator
 ) -> None:
+    """Ixtiyoriy: chek raqamini kiritib tasdiqlash."""
     if not _guard(user):
         await query.answer(_("error.no_access"), show_alert=True)
         return
@@ -637,18 +746,38 @@ async def apply_paid(
     raw = (message.text or "").strip()
     external_ref = None if raw == "-" else raw[:128]
 
-    try:
-        await withdrawals.mark_paid(session, request, user.id, external_ref)
-    except withdrawals.WithdrawError:
+    if not await _finish_payout(bot, session, request, user, _, external_ref=external_ref):
         await message.answer(_("withdraw.cannot_cancel"))
         return
-    except wallet.InsufficientFunds:
-        await message.answer(_("error.generic"))
-        return
+
+    await message.answer(_("admin.withdrawal_updated"))
+    await _render_withdrawal(message, session, request.id, _, fmt, edit=False)
+
+
+async def _finish_payout(
+    bot: Bot,
+    session: AsyncSession,
+    request: Withdrawal,
+    admin: User,
+    _: Translator,
+    *,
+    external_ref: str | None,
+) -> bool:
+    """To'lovni yakunlaydi: hisobdan yechadi, log yozadi, foydalanuvchini xabardor qiladi.
+
+    Qaytaradi: amal bajarildimi (so'rov allaqachon yopilgan bo'lsa False).
+    """
+    try:
+        await withdrawals.mark_paid(session, request, admin.id, external_ref)
+    except (withdrawals.WithdrawError, wallet.InsufficientFunds):
+        logger.warning("So'rov #%s ni yakunlab bo'lmadi", request.id)
+        return False
 
     session.add(
         AuditLog(
-            actor_id=user.id, action="withdraw_paid", target=str(request.id),
+            actor_id=admin.id,
+            action="withdraw_paid",
+            target=str(request.id),
             payload={"ref": external_ref, "amount_mxtr": request.amount_mxtr},
         )
     )
@@ -668,9 +797,7 @@ async def apply_paid(
                 ref=f"🧾 {external_ref}" if external_ref else "",
             ),
         )
-
-    await message.answer(_("admin.withdrawal_updated"))
-    await _render_withdrawal(message, session, request.id, _, fmt, edit=False)
+    return True
 
 
 # --------------------------------------------------------------------------

@@ -22,7 +22,6 @@
     "copied": "Nusxalash uchun bosing:",
     "none": "—"
   },
-
   "error": {
     "generic": "⚠️ Xatolik yuz berdi. Birozdan so'ng qayta urinib ko'ring.",
     "not_found": "🔍 Topilmadi.",
@@ -35,12 +34,10 @@
     "expired": "⌛ Bu amalning muddati tugagan.",
     "user_blocked_bot": "Foydalanuvchi botni bloklagan — xabar yetkazilmadi."
   },
-
   "language": {
     "choose": "🌐 Tilni tanlang / Выберите язык / Choose language:",
     "changed": "✅ Til o'zbekchaga o'zgartirildi."
   },
-
   "currency": {
     "choose": "💱 Qaysi valyutada ko'rsatilsin?",
     "changed": "✅ Valyuta o'zgartirildi: {currency}",
@@ -48,13 +45,11 @@
     "UZS": "🇺🇿 So'm",
     "USD": "💵 Dollar"
   },
-
   "start": {
     "welcome": "👋 Assalomu alaykum, {name}!\n\n<b>PulBot</b> — sizga yozish uchun haq oladigan bot.\n\n⭐ To'lovlar Telegram Yulduzchalari orqali\n💬 Shaxsiy xabarlar, guruhlar va kanallar uchun\n💳 Balansni to'ldiring, ishlang, pulni yeching\n\nQuyidagi menyudan boshlang 👇",
     "welcome_back": "🏠 Asosiy menyu",
     "how_it_works": "ℹ️ <b>Qanday ishlaydi?</b>\n\n1️⃣ <b>Narx belgilang.</b> Sizga yozish uchun qancha to'lash kerakligini o'zingiz belgilaysiz — so'mda, dollarda yoki yulduzchada.\n\n2️⃣ <b>Havolangizni ulashing.</b> Sizga yozmoqchi bo'lgan odam shu havola orqali kiradi.\n\n3️⃣ <b>U to'laydi — siz olasiz.</b> Pul avtomatik balansingizga tushadi.\n\n4️⃣ <b>Pulni yeching.</b> Karta, Payme, Click yoki USDT orqali.\n\n💡 Telegram Premium egalari uchun bepul qilib qo'yish, do'stlarni istisnoga kiritish, tungi vaqtga boshqa narx belgilash — hammasi mumkin."
   },
-
   "menu": {
     "title": "🏠 <b>Asosiy menyu</b>\n\n💰 Balans: <b>{balance}</b>\n🔗 Havolangiz: {link}",
     "wallet": "💰 Hamyon",
@@ -67,7 +62,6 @@
     "admin": "🛠 Admin panel",
     "stats": "📊 Statistika"
   },
-
   "wallet": {
     "title": "💰 <b>Hamyon</b>\n\n💵 Umumiy balans: <b>{balance}</b>\n✅ Sarflash mumkin: <b>{available}</b>\n🔒 Ushlab turilgan: <b>{locked}</b>\n\n📈 Jami ishlangan: {earned}\n📉 Jami sarflangan: {spent}\n⬆️ Jami to'ldirilgan: {topup}\n⬇️ Jami yechilgan: {withdrawn}",
     "topup": "➕ Balansni to'ldirish",
@@ -75,7 +69,6 @@
     "history": "🧾 Tarix",
     "locked_hint": "🔒 Ushlab turilgan mablag' — yetkazilgan, lekin hali yakunlanmagan xabarlar yoki ko'rib chiqilayotgan pul yechish so'rovlari uchun."
   },
-
   "topup": {
     "title": "➕ <b>Balansni to'ldirish</b>\n\nTo'lov <b>Telegram Yulduzchalari</b> orqali amalga oshiriladi.\nQancha to'ldirmoqchisiz?",
     "custom": "✏️ Boshqa summa",
@@ -89,7 +82,6 @@
     "other_methods": "💳 Boshqa to'lov usullari",
     "other_methods_text": "💳 <b>Boshqa to'lov usullari</b>\n\nHozircha faqat Telegram Yulduzchalari ishlamoqda.\n\n🔜 Tez orada: Click, Payme, Uzumbank va bank kartalari orqali to'ldirish qo'shiladi — so'mda to'laysiz, balansingizga yulduzcha ekvivalentida tushadi.\n\nAgar katta summa to'ldirmoqchi bo'lsangiz, admin bilan bog'laning: {support}"
   },
-
   "history": {
     "title": "🧾 <b>Tranzaksiyalar tarixi</b>",
     "empty": "Hozircha tranzaksiyalar yo'q.",
@@ -112,7 +104,6 @@
       "tip": "🎁 Choychaqa"
     }
   },
-
   "inbox": {
     "title": "📥 <b>Xabarlar sozlamasi</b>\n\n🔀 Rejim: <b>{mode}</b>\n💵 Narx: <b>{price}</b>\n📏 Hisoblash: <b>{unit}</b>\n\n🎁 Birinchi xabar bepul: {first_free}\n⭐ Premium egalari bepul: {premium_free}\n🕒 Vaqt jadvallari: {schedules} ta\n👤 Istisnolar: {rules} ta\n🔒 Kafolat (escrow): {hold}",
     "mode_btn": "🔀 Rejimni o'zgartirish",
@@ -123,24 +114,19 @@
     "limits_btn": "🔢 Limitlar",
     "extra_btn": "🧩 Qo'shimcha",
     "welcome_btn": "✍️ Salomlashuv matni",
-
     "choose_mode": "🔀 <b>Rejimni tanlang</b>\n\nHozirgi: <b>{current}</b>",
     "mode_saved": "✅ Rejim o'zgartirildi: <b>{mode}</b>",
-
     "price_prompt": "💵 <b>Narxni belgilang</b>\n\nSizga bitta xabar yozish uchun qancha to'lansin?\n\nValyuta: <b>{currency}</b>\nMasalan: <code>{example}</code>\n\n💡 <code>0</code> yozsangiz — bepul bo'ladi.\n📊 Chegara: {min} — {max}",
     "price_saved": "✅ Narx belgilandi: <b>{price}</b>\n\nSizga tushadigan summa (komissiya {commission}% ayirilgach): <b>{net}</b>",
     "price_currency_btn": "💱 Valyutani o'zgartirish",
-
     "choose_unit": "📏 <b>Hisoblash usuli</b>\n\n<b>Har bir xabar uchun</b> — yozilgan har bir xabar uchun alohida to'lov.\n<b>Sessiya uchun</b> — bir marta to'laydi va {minutes} daqiqa davomida xohlagancha yozadi.",
     "unit_saved": "✅ Hisoblash usuli: <b>{unit}</b>",
     "session_minutes_prompt": "⏱ Sessiya necha daqiqa davom etsin?\n\nMasalan: <code>60</code> (1 soat)",
     "session_minutes_saved": "✅ Sessiya davomiyligi: {minutes} daqiqa",
-
     "limits_title": "🔢 <b>Limitlar</b>\n\n📨 Kuniga jami qabul qilinadigan xabarlar: <b>{daily}</b>\n👤 Bitta odamdan kuniga: <b>{per_sender}</b>",
     "daily_limit_prompt": "📨 Kuniga nechta xabar qabul qilasiz?\n<code>0</code> — cheksiz.",
     "per_sender_prompt": "👤 Bitta odam sizga kuniga nechta xabar yoza olsin?\n<code>0</code> — cheksiz.",
     "limit_saved": "✅ Limit saqlandi.",
-
     "extra_title": "🧩 <b>Qo'shimcha sozlamalar</b>",
     "toggle_first_free": "🎁 Birinchi xabar bepul: {state}",
     "toggle_premium_free": "⭐ Premium egalari bepul: {state}",
@@ -150,7 +136,6 @@
     "hold_saved": "✅ Kafolat muddati: {hours} soat",
     "welcome_prompt": "✍️ Sizga yozmoqchi bo'lgan odam ko'radigan matnni kiriting.\n\n<code>-</code> yozsangiz o'chiriladi.",
     "welcome_saved": "✅ Salomlashuv matni saqlandi.",
-
     "rules_title": "👤 <b>Istisnolar</b>\n\nBu yerda ayrim odamlar uchun alohida qoida belgilaysiz: bepul yozish, bloklash yoki boshqa narx.",
     "rules_empty": "Hozircha istisnolar yo'q.",
     "rule_add_free": "🎁 Bepul yozadigan qo'shish",
@@ -165,7 +150,6 @@
       "blocked": "🚫 bloklangan",
       "custom_price": "💵 {price}"
     },
-
     "schedule_title": "🕒 <b>Vaqt jadvali</b>\n\nMa'lum kun va soatlarda boshqa narx yoki bepul rejim ishlaydi.\nJadval yuqoridan pastga qarab ustuvorlik bilan tekshiriladi.\n\n🌍 Sizning vaqt mintaqangiz: UTC{tz}",
     "schedule_empty": "Jadval qo'shilmagan — narx doim bir xil.",
     "schedule_add": "➕ Jadval qo'shish",
@@ -185,7 +169,6 @@
     "schedule_removed": "🗑 Jadval o'chirildi.",
     "schedule_limit": "❌ Maksimal {max} ta jadval qo'shish mumkin."
   },
-
   "mode": {
     "open": "🔓 Hamma bepul yozadi",
     "paid": "💵 Pullik",
@@ -201,19 +184,16 @@
       "closed": "Hech kim yoza olmaydi."
     }
   },
-
   "unit": {
     "per_message": "Har bir xabar uchun",
     "per_session": "Sessiya uchun ({minutes} daqiqa)"
   },
-
   "link": {
     "title": "🔗 <b>Sizning havolangiz</b>\n\n{link}\n\nShu havolani profilingizga, Instagram yoki TikTok sahifangizga qo'ying. Kim sizga yozmoqchi bo'lsa — shu yerdan yozadi.\n\n💵 Hozirgi narx: <b>{price}</b>\n🔀 Rejim: <b>{mode}</b>",
     "share": "📤 Ulashish",
     "share_text": "Menga shu yerdan yozing 👇",
     "qr": "🔳 QR kod"
   },
-
   "relay": {
     "intro": "✍️ <b>{name}</b> ga xabar yozmoqchisiz.\n\n{welcome}",
     "price_notice": "💵 Bitta xabar narxi: <b>{price}</b>\n💰 Sizning balansingiz: <b>{balance}</b>",
@@ -237,7 +217,6 @@
     "schedule_closed": "🕒 Hozir <b>{name}</b> xabar qabul qilmaydi. Keyinroq urinib ko'ring.",
     "self": "😊 Bu sizning o'z havolangiz. Uni boshqalarga ulashing!",
     "not_found": "🔍 Bunday foydalanuvchi topilmadi. Havolani tekshiring.",
-
     "new_message": "📩 <b>Yangi xabar</b>\n\n👤 Kimdan: {sender}\n{payment_line}\n\n{text}",
     "new_message_paid": "💰 To'lov: <b>{price}</b> (sizga: <b>{net}</b>)",
     "new_message_held": "🔒 <b>{net}</b> kafolatda — javob bersangiz darhol hisobingizga o'tadi.",
@@ -257,7 +236,6 @@
     "recipient_unreachable": "⚠️ Xabar yetkazilmadi (foydalanuvchi botni bloklagan). Pul qaytarildi.",
     "session_started": "⏱ Sessiya boshlandi — {minutes} daqiqa davomida cheksiz yozing."
   },
-
   "reason": {
     "self": "O'zingizga",
     "open": "Ochiq rejim",
@@ -280,7 +258,6 @@
     "owner": "Siz egasisiz",
     "banned": "Bloklangan"
   },
-
   "group": {
     "title": "👥 <b>{title}</b>\n\n{status}\n🔀 Rejim: <b>{mode}</b>\n💵 Narx: <b>{price}</b>\n🎁 Kunlik bepul: <b>{quota}</b>\n👑 Adminlar bepul: {admins}\n⭐ Premium bepul: {premium}\n🕒 Jadvallar: {schedules} ta\n\n💰 Jami tushum: <b>{earned}</b>",
     "list_title": "👥 <b>Guruhlarim</b>\n\nBot admin qilib qo'yilgan guruh va kanallar:",
@@ -327,7 +304,6 @@
       "other": "📦 Boshqa"
     }
   },
-
   "withdraw": {
     "title": "💸 <b>Pul yechish</b>\n\n💰 Yechish mumkin: <b>{available}</b>\n📉 Minimal summa: <b>{min}</b>\n🏦 Komissiya: <b>{fee}%</b>\n\n⏳ To'ldirilgan mablag' {hold} soatdan keyin yechiladi (xavfsizlik uchun).",
     "disabled": "🚫 Pul yechish vaqtincha to'xtatilgan.",
@@ -372,7 +348,6 @@
     "rejected_notice": "❌ Pul yechish so'rovingiz #{id} rad etildi.\nSabab: {reason}\n\n💰 <b>{amount}</b> balansingizga qaytarildi.",
     "daily_limit": "❌ Bugungi yechish limiti to'ldi. Ertaga urinib ko'ring."
   },
-
   "settings": {
     "title": "⚙️ <b>Sozlamalar</b>",
     "language": "🌐 Til: {current}",
@@ -383,11 +358,9 @@
     "referral": "🎁 Referal havolam",
     "referral_text": "🎁 <b>Referal dastur</b>\n\nDo'stlaringizni taklif qiling:\n{link}\n\n👥 Taklif qilganlar: <b>{count}</b> ta"
   },
-
   "profile": {
     "title": "👤 <b>{name}</b>\n\n🆔 <code>{id}</code>\n{username}\n⭐ Premium: {premium}\n📅 Ro'yxatdan o'tgan: {joined}\n\n💬 Qabul qilgan xabarlari: {received}\n💰 Ishlagan mablag'i: {earned}"
   },
-
   "admin": {
     "title": "🛠 <b>Admin panel</b>",
     "stats_btn": "📊 Statistika",
@@ -421,7 +394,7 @@
     "withdrawal_card": "💸 <b>So'rov #{id}</b>\n\n👤 {user} (<code>{user_id}</code>)\n💵 Summa: <b>{amount}</b>\n🏦 Komissiya: {fee}\n✅ To'lanadi: <b>{net}</b>\n\n💳 {method}\n📇 <code>{destination}</code>\n👤 {destination_name}\n\n📅 {date}\n⚠️ Risk: {risk}\n{flags}",
     "approve_btn": "✅ Tasdiqlash",
     "reject_btn": "❌ Rad etish",
-    "mark_paid_btn": "💸 To'landi deb belgilash",
+    "mark_paid_btn": "💸 To'ladim — tasdiqlash",
     "reject_prompt": "❌ Rad etish sababini kiriting:",
     "paid_prompt": "🧾 To'lov ma'lumotnomasini kiriting (chek raqami yoki <code>-</code>):",
     "withdrawal_updated": "✅ So'rov holati yangilandi.",
@@ -432,16 +405,20 @@
     "settings_title": "⚙️ <b>Tizim sozlamalari</b>\n\n💵 Min. to'ldirish: {min_topup}\n💸 Min. yechish: {min_withdraw}\n🏦 Yechish komissiyasi: {withdraw_fee}%\n⏳ Xavfsizlik muddati: {hold} soat\n🔧 Texnik ish: {maintenance}",
     "toggle_maintenance": "🛠 Texnik ish rejimi: {state}",
     "toggle_withdraw": "💸 Pul yechish: {state}",
-    "new_withdrawal_alert": "🔔 <b>Yangi pul yechish so'rovi #{id}</b>\n\n👤 {user}\n💵 {amount} → {net}\n💳 {method}"
+    "new_withdrawal_alert": "🔔 <b>Yangi pul yechish so'rovi #{id}</b>\n\n👤 {user}\n💵 {amount} → {net}\n💳 {method}",
+    "open_request": "💸 So'rovni ochish",
+    "wd_payout": "💳 Kartaga tashlanadigan summa: <b>{amount} {currency}</b>",
+    "wd_user_balance": "🏦 <b>Foydalanuvchi hisobi</b>\n💰 Balans: <b>{balance}</b> (🔒 ushlangan: {locked})\n📈 Ishlagan: {earned} • ⬆️ To'ldirgan: {topup}",
+    "confirm_paid": "❓ <b>Tasdiqlaysizmi?</b>\n\nSo'rov: #{id}\n📇 Karta: <code>{destination}</code>\n👤 Egasi: {name}\n💳 Tashlangan summa: <b>{payout}</b>\n\nTasdiqlasangiz foydalanuvchi hisobidan <b>{amount}</b> yechiladi va unga xabar boradi.\n\n⚠️ Bu amalni orqaga qaytarib bo'lmaydi — avval kartaga pul tashlaganingizga ishonch hosil qiling.",
+    "paid_confirm_btn": "✅ Ha, pul tashladim",
+    "paid_with_ref_btn": "🧾 Chek raqami bilan tasdiqlash"
   },
-
   "help": {
     "title": "ℹ️ <b>Yordam</b>",
     "text": "ℹ️ <b>PulBot yordam</b>\n\n<b>Asosiy buyruqlar</b>\n/start — asosiy menyu\n/balans — hamyon\n/narx — narxni tez o'zgartirish\n/havola — havolangiz\n/yechish — pul yechish\n/til — tilni o'zgartirish\n/yordam — shu sahifa\n\n<b>Guruhda</b>\n/sozlash — guruh sozlamalari (admin uchun)\n/narx 5000 — narxni belgilash\n/bepul @user — istisnoga qo'shish\n/bloklash @user — bloklash\n\n<b>Savollar</b>\n💬 Qo'llab-quvvatlash: {support}",
     "faq_btn": "❓ Ko'p so'raladigan savollar",
     "faq": "❓ <b>Ko'p so'raladigan savollar</b>\n\n<b>Pul qayerdan keladi?</b>\nSizga yozmoqchi bo'lgan odam Telegram Yulduzchalari orqali to'laydi. Yulduzchani u istalgan usulda — karta, Apple Pay, Google Pay orqali sotib oladi.\n\n<b>Komissiya qancha?</b>\nPlatforma har bir to'lovdan {commission}% oladi. Qolgani sizniki.\n\n<b>Pulni qanday yechaman?</b>\nHamyon → Pul yechish. Karta, Payme, Click yoki USDT tanlaysiz. So'rov 24 soat ichida ko'rib chiqiladi.\n\n<b>Kafolat (escrow) nima?</b>\nSizga pullik xabar kelganda pul darrov emas, balki siz javob berganingizdan keyin o'tadi. Bu yozuvchi uchun kafolat — javob olmasa puli qaytadi.\n\n<b>Guruhda qanday ishlaydi?</b>\nBotni guruhga admin qilib qo'shasiz, narx belgilaysiz. Kim yozsa — balansidan pul yechiladi va sizga o'tadi. Adminlar, Premium egalari yoki tanlagan odamlaringiz uchun bepul qilib qo'yish mumkin."
   },
-
   "cmdlist": {
     "start": "Asosiy menyu",
     "balance": "Hamyon va balans",
@@ -455,7 +432,6 @@
     "group_free": "Bepul yozadigan qo'shish",
     "group_block": "Foydalanuvchini bloklash"
   },
-
   "cmd": {
     "price_usage": "Ishlatilishi: <code>/narx 5000</code>",
     "price_set": "✅ Narx belgilandi: <b>{price}</b>",

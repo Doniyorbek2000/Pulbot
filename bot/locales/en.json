@@ -22,7 +22,6 @@
     "copied": "Tap to copy:",
     "none": "—"
   },
-
   "error": {
     "generic": "⚠️ Something went wrong. Please try again later.",
     "not_found": "🔍 Not found.",
@@ -35,12 +34,10 @@
     "expired": "⌛ This action has expired.",
     "user_blocked_bot": "The user has blocked the bot — message not delivered."
   },
-
   "language": {
     "choose": "🌐 Tilni tanlang / Выберите язык / Choose language:",
     "changed": "✅ Language changed to English."
   },
-
   "currency": {
     "choose": "💱 Which currency should amounts be shown in?",
     "changed": "✅ Currency changed: {currency}",
@@ -48,13 +45,11 @@
     "UZS": "🇺🇿 Sum",
     "USD": "💵 Dollar"
   },
-
   "start": {
     "welcome": "👋 Hello, {name}!\n\n<b>PulBot</b> — the bot that charges people for messaging you.\n\n⭐ Payments via Telegram Stars\n💬 Direct messages, groups and channels\n💳 Top up, earn, withdraw\n\nStart from the menu below 👇",
     "welcome_back": "🏠 Main menu",
     "how_it_works": "ℹ️ <b>How it works</b>\n\n1️⃣ <b>Set your price.</b> You decide what it costs to message you — in sum, dollars or stars.\n\n2️⃣ <b>Share your link.</b> Anyone who wants to reach you goes through it.\n\n3️⃣ <b>They pay, you earn.</b> The money lands in your balance automatically.\n\n4️⃣ <b>Withdraw.</b> Card, Payme, Click or USDT.\n\n💡 Free for Telegram Premium users, exceptions for friends, a different price at night — all configurable."
   },
-
   "menu": {
     "title": "🏠 <b>Main menu</b>\n\n💰 Balance: <b>{balance}</b>\n🔗 Your link: {link}",
     "wallet": "💰 Wallet",
@@ -67,7 +62,6 @@
     "admin": "🛠 Admin panel",
     "stats": "📊 Stats"
   },
-
   "wallet": {
     "title": "💰 <b>Wallet</b>\n\n💵 Total balance: <b>{balance}</b>\n✅ Available: <b>{available}</b>\n🔒 On hold: <b>{locked}</b>\n\n📈 Total earned: {earned}\n📉 Total spent: {spent}\n⬆️ Total topped up: {topup}\n⬇️ Total withdrawn: {withdrawn}",
     "topup": "➕ Top up balance",
@@ -75,7 +69,6 @@
     "history": "🧾 History",
     "locked_hint": "🔒 Funds on hold are delivered-but-unsettled messages and withdrawal requests under review."
   },
-
   "topup": {
     "title": "➕ <b>Top up balance</b>\n\nPayment is made with <b>Telegram Stars</b>.\nHow much would you like to add?",
     "custom": "✏️ Custom amount",
@@ -89,7 +82,6 @@
     "other_methods": "💳 Other payment methods",
     "other_methods_text": "💳 <b>Other payment methods</b>\n\nOnly Telegram Stars is available right now.\n\n🔜 Coming soon: Click, Payme, Uzumbank and bank cards — you pay in sum, your balance is credited with the star equivalent.\n\nFor large amounts contact the admin: {support}"
   },
-
   "history": {
     "title": "🧾 <b>Transaction history</b>",
     "empty": "No transactions yet.",
@@ -112,7 +104,6 @@
       "tip": "🎁 Tip"
     }
   },
-
   "inbox": {
     "title": "📥 <b>Message settings</b>\n\n🔀 Mode: <b>{mode}</b>\n💵 Price: <b>{price}</b>\n📏 Billing: <b>{unit}</b>\n\n🎁 First message free: {first_free}\n⭐ Free for Premium: {premium_free}\n🕒 Schedules: {schedules}\n👤 Exceptions: {rules}\n🔒 Escrow: {hold}",
     "mode_btn": "🔀 Change mode",
@@ -123,24 +114,19 @@
     "limits_btn": "🔢 Limits",
     "extra_btn": "🧩 More",
     "welcome_btn": "✍️ Greeting text",
-
     "choose_mode": "🔀 <b>Choose a mode</b>\n\nCurrent: <b>{current}</b>",
     "mode_saved": "✅ Mode changed: <b>{mode}</b>",
-
     "price_prompt": "💵 <b>Set your price</b>\n\nHow much should one message to you cost?\n\nCurrency: <b>{currency}</b>\nExample: <code>{example}</code>\n\n💡 <code>0</code> means free.\n📊 Range: {min} — {max}",
     "price_saved": "✅ Price set: <b>{price}</b>\n\nYou receive (after {commission}% commission): <b>{net}</b>",
     "price_currency_btn": "💱 Change currency",
-
     "choose_unit": "📏 <b>Billing mode</b>\n\n<b>Per message</b> — charged for every message.\n<b>Per session</b> — pays once and writes freely for {minutes} minutes.",
     "unit_saved": "✅ Billing mode: <b>{unit}</b>",
     "session_minutes_prompt": "⏱ How many minutes should a session last?\n\nExample: <code>60</code> (1 hour)",
     "session_minutes_saved": "✅ Session length: {minutes} min",
-
     "limits_title": "🔢 <b>Limits</b>\n\n📨 Total messages per day: <b>{daily}</b>\n👤 Per person per day: <b>{per_sender}</b>",
     "daily_limit_prompt": "📨 How many messages will you accept per day?\n<code>0</code> — unlimited.",
     "per_sender_prompt": "👤 How many messages can one person send you per day?\n<code>0</code> — unlimited.",
     "limit_saved": "✅ Limit saved.",
-
     "extra_title": "🧩 <b>Extra settings</b>",
     "toggle_first_free": "🎁 First message free: {state}",
     "toggle_premium_free": "⭐ Free for Premium: {state}",
@@ -150,7 +136,6 @@
     "hold_saved": "✅ Escrow period: {hours}h",
     "welcome_prompt": "✍️ Enter the text people see before writing to you.\n\n<code>-</code> to remove it.",
     "welcome_saved": "✅ Greeting saved.",
-
     "rules_title": "👤 <b>Exceptions</b>\n\nSet special rules for individual people: free access, block, or a custom price.",
     "rules_empty": "No exceptions yet.",
     "rule_add_free": "🎁 Add free sender",
@@ -165,7 +150,6 @@
       "blocked": "🚫 blocked",
       "custom_price": "💵 {price}"
     },
-
     "schedule_title": "🕒 <b>Schedule</b>\n\nApply a different price or free mode on certain days and hours.\nRules are evaluated top-down by priority.\n\n🌍 Your timezone: UTC{tz}",
     "schedule_empty": "No schedule — the price is always the same.",
     "schedule_add": "➕ Add rule",
@@ -185,7 +169,6 @@
     "schedule_removed": "🗑 Rule removed.",
     "schedule_limit": "❌ You can add at most {max} rules."
   },
-
   "mode": {
     "open": "🔓 Everyone writes free",
     "paid": "💵 Paid",
@@ -201,19 +184,16 @@
       "closed": "Nobody can write to you."
     }
   },
-
   "unit": {
     "per_message": "Per message",
     "per_session": "Per session ({minutes} min)"
   },
-
   "link": {
     "title": "🔗 <b>Your link</b>\n\n{link}\n\nPut it in your bio, Instagram or TikTok. Anyone who wants to reach you writes through it.\n\n💵 Current price: <b>{price}</b>\n🔀 Mode: <b>{mode}</b>",
     "share": "📤 Share",
     "share_text": "Message me here 👇",
     "qr": "🔳 QR code"
   },
-
   "relay": {
     "intro": "✍️ You're writing to <b>{name}</b>.\n\n{welcome}",
     "price_notice": "💵 Price per message: <b>{price}</b>\n💰 Your balance: <b>{balance}</b>",
@@ -237,7 +217,6 @@
     "schedule_closed": "🕒 <b>{name}</b> isn't accepting messages at this hour. Try later.",
     "self": "😊 That's your own link. Share it with others!",
     "not_found": "🔍 User not found. Check the link.",
-
     "new_message": "📩 <b>New message</b>\n\n👤 From: {sender}\n{payment_line}\n\n{text}",
     "new_message_paid": "💰 Payment: <b>{price}</b> (you get: <b>{net}</b>)",
     "new_message_held": "🔒 <b>{net}</b> in escrow — reply and it's credited instantly.",
@@ -257,7 +236,6 @@
     "recipient_unreachable": "⚠️ Not delivered (the user blocked the bot). Your money was refunded.",
     "session_started": "⏱ Session started — write freely for {minutes} minutes."
   },
-
   "reason": {
     "self": "To yourself",
     "open": "Open mode",
@@ -280,7 +258,6 @@
     "owner": "You're the owner",
     "banned": "Banned"
   },
-
   "group": {
     "title": "👥 <b>{title}</b>\n\n{status}\n🔀 Mode: <b>{mode}</b>\n💵 Price: <b>{price}</b>\n🎁 Free per day: <b>{quota}</b>\n👑 Admins free: {admins}\n⭐ Premium free: {premium}\n🕒 Schedules: {schedules}\n\n💰 Total earned: <b>{earned}</b>",
     "list_title": "👥 <b>My groups</b>\n\nGroups and channels where the bot is an admin:",
@@ -327,7 +304,6 @@
       "other": "📦 Other"
     }
   },
-
   "withdraw": {
     "title": "💸 <b>Withdraw</b>\n\n💰 Available: <b>{available}</b>\n📉 Minimum: <b>{min}</b>\n🏦 Fee: <b>{fee}%</b>\n\n⏳ Topped-up funds become withdrawable after {hold}h (security hold).",
     "disabled": "🚫 Withdrawals are temporarily paused.",
@@ -372,7 +348,6 @@
     "rejected_notice": "❌ Your withdrawal request #{id} was rejected.\nReason: {reason}\n\n💰 <b>{amount}</b> has been returned to your balance.",
     "daily_limit": "❌ Daily withdrawal limit reached. Try again tomorrow."
   },
-
   "settings": {
     "title": "⚙️ <b>Settings</b>",
     "language": "🌐 Language: {current}",
@@ -383,11 +358,9 @@
     "referral": "🎁 My referral link",
     "referral_text": "🎁 <b>Referral program</b>\n\nInvite your friends:\n{link}\n\n👥 Invited: <b>{count}</b>"
   },
-
   "profile": {
     "title": "👤 <b>{name}</b>\n\n🆔 <code>{id}</code>\n{username}\n⭐ Premium: {premium}\n📅 Joined: {joined}\n\n💬 Messages received: {received}\n💰 Earned: {earned}"
   },
-
   "admin": {
     "title": "🛠 <b>Admin panel</b>",
     "stats_btn": "📊 Stats",
@@ -421,7 +394,7 @@
     "withdrawal_card": "💸 <b>Request #{id}</b>\n\n👤 {user} (<code>{user_id}</code>)\n💵 Amount: <b>{amount}</b>\n🏦 Fee: {fee}\n✅ Payout: <b>{net}</b>\n\n💳 {method}\n📇 <code>{destination}</code>\n👤 {destination_name}\n\n📅 {date}\n⚠️ Risk: {risk}\n{flags}",
     "approve_btn": "✅ Approve",
     "reject_btn": "❌ Reject",
-    "mark_paid_btn": "💸 Mark as paid",
+    "mark_paid_btn": "💸 I paid — confirm",
     "reject_prompt": "❌ Enter the rejection reason:",
     "paid_prompt": "🧾 Enter the payment reference (receipt number or <code>-</code>):",
     "withdrawal_updated": "✅ Request status updated.",
@@ -432,16 +405,20 @@
     "settings_title": "⚙️ <b>System settings</b>\n\n💵 Min top-up: {min_topup}\n💸 Min withdrawal: {min_withdraw}\n🏦 Withdrawal fee: {withdraw_fee}%\n⏳ Security hold: {hold}h\n🔧 Maintenance: {maintenance}",
     "toggle_maintenance": "🛠 Maintenance mode: {state}",
     "toggle_withdraw": "💸 Withdrawals: {state}",
-    "new_withdrawal_alert": "🔔 <b>New withdrawal request #{id}</b>\n\n👤 {user}\n💵 {amount} → {net}\n💳 {method}"
+    "new_withdrawal_alert": "🔔 <b>New withdrawal request #{id}</b>\n\n👤 {user}\n💵 {amount} → {net}\n💳 {method}",
+    "open_request": "💸 Open request",
+    "wd_payout": "💳 Amount to send to the card: <b>{amount} {currency}</b>",
+    "wd_user_balance": "🏦 <b>User account</b>\n💰 Balance: <b>{balance}</b> (🔒 on hold: {locked})\n📈 Earned: {earned} • ⬆️ Topped up: {topup}",
+    "confirm_paid": "❓ <b>Confirm?</b>\n\nRequest: #{id}\n📇 Card: <code>{destination}</code>\n👤 Holder: {name}\n💳 Amount sent: <b>{payout}</b>\n\nOn confirmation <b>{amount}</b> is deducted from the user's balance and they get notified.\n\n⚠️ This cannot be undone — make sure the money has actually been sent.",
+    "paid_confirm_btn": "✅ Yes, I sent the money",
+    "paid_with_ref_btn": "🧾 Confirm with receipt number"
   },
-
   "help": {
     "title": "ℹ️ <b>Help</b>",
     "text": "ℹ️ <b>PulBot help</b>\n\n<b>Main commands</b>\n/start — main menu\n/balans — wallet\n/narx — quickly change your price\n/havola — your link\n/yechish — withdraw\n/til — change language\n/yordam — this page\n\n<b>In a group</b>\n/sozlash — group settings (admins)\n/narx 5000 — set the price\n/bepul @user — add an exception\n/bloklash @user — block someone\n\n<b>Questions</b>\n💬 Support: {support}",
     "faq_btn": "❓ FAQ",
     "faq": "❓ <b>Frequently asked questions</b>\n\n<b>Where does the money come from?</b>\nThe person messaging you pays with Telegram Stars, which they buy however they like — card, Apple Pay, Google Pay.\n\n<b>What's the commission?</b>\nThe platform takes {commission}% of each payment. The rest is yours.\n\n<b>How do I withdraw?</b>\nWallet → Withdraw. Pick card, Payme, Click or USDT. Requests are handled within 24 hours.\n\n<b>What is escrow?</b>\nWhen a paid message arrives, the money is credited after you reply, not before. It's a guarantee for the sender — no reply, money back.\n\n<b>How does it work in groups?</b>\nAdd the bot as an admin and set a price. Whoever writes is charged, and the money goes to you. Admins, Premium users or people you pick can write for free."
   },
-
   "cmdlist": {
     "start": "Main menu",
     "balance": "Wallet and balance",
@@ -455,7 +432,6 @@
     "group_free": "Add a free sender",
     "group_block": "Block a user"
   },
-
   "cmd": {
     "price_usage": "Usage: <code>/narx 5000</code>",
     "price_set": "✅ Price set: <b>{price}</b>",

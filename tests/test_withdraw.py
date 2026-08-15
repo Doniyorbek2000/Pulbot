@@ -252,3 +252,49 @@ async def test_withdraw_disabled_blocks_requests(session, make_user):
             method=WithdrawMethod.CARD_UZS, destination="8600123412341234",
         )
     assert exc.value.key == "withdraw.disabled"
+
+
+async def test_one_click_payout_deducts_balance(session, make_user):
+    """Admin bir bosishda tasdiqlaydi — chek raqami majburiy emas."""
+    user = await make_user()
+    admin = await make_user(is_admin=True)
+    await wallet.credit(session, user.id, stars_to_mxtr(5000), TxKind.MESSAGE_EARN)
+
+    request = await withdrawals.create_request(
+        session, user, amount_mxtr=stars_to_mxtr(2000),
+        method=WithdrawMethod.CARD_UZS, destination="8600123412341234",
+        destination_name="ALISHER VALIYEV",
+    )
+
+    # Karta va ism saqlangan — admin ularni ko'radi
+    assert request.destination == "8600123412341234"
+    assert request.destination_name == "ALISHER VALIYEV"
+    assert request.payout_currency == "UZS"
+    assert request.payout_amount  # so'mdagi summa hisoblangan
+
+    # Chek raqamisiz tasdiqlash
+    await withdrawals.mark_paid(session, request, admin.id, None)
+
+    assert request.status == WithdrawStatus.PAID
+    assert request.external_ref is None
+    assert request.admin_id == admin.id
+
+    balance, available = await wallet.balance(session, user.id)
+    assert balance == stars_to_mxtr(3000)   # aynan yechilgan summaga kamaydi
+    assert available == stars_to_mxtr(3000)
+
+
+async def test_payout_amount_matches_card_currency(session, make_user):
+    """Admin kartaga tashlaydigan summa so'mda to'g'ri hisoblanishi kerak."""
+    user = await make_user()
+    await wallet.credit(session, user.id, stars_to_mxtr(5000), TxKind.MESSAGE_EARN)
+
+    request = await withdrawals.create_request(
+        session, user, amount_mxtr=stars_to_mxtr(2000),
+        method=WithdrawMethod.CARD_UZS, destination="8600123412341234",
+    )
+
+    # net = 2000 - 2% = 1960 yulduzcha; kurs 170 so'm -> 333 200 so'm
+    assert request.net_mxtr == stars_to_mxtr(1960)
+    assert request.payout_amount == "333200"
+    assert request.payout_currency == "UZS"
