@@ -6,7 +6,8 @@ import logging
 from datetime import timedelta
 
 from aiogram import Bot, F, Router
-from aiogram.filters import ChatMemberUpdatedFilter, JOIN_TRANSITION
+from aiogram.enums import ChatMemberStatus, ChatType
+from aiogram.filters import ChatMemberUpdatedFilter, Command, CommandObject, JOIN_TRANSITION
 from aiogram.types import (
     ChatMemberUpdated,
     ChatPermissions,
@@ -18,8 +19,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot.config import settings
-from bot.db.enums import TargetType
-from bot.db.models import ActivePermission, ChatSettings
+from bot.db.enums import ChatMode, TargetType
+from bot.db.models import ActivePermission, ChatSettings, User
+from bot.services import chats
 from bot.services.payments.orders import (
     create_cryptobot_invoice,
     create_payment_order,
@@ -32,10 +34,101 @@ logger = logging.getLogger(__name__)
 
 router = Router(name="group_guard")
 
+LOCKED_PERMISSIONS = ChatPermissions(
+    can_send_messages=False,
+    can_send_audios=False,
+    can_send_documents=False,
+    can_send_photos=False,
+    can_send_videos=False,
+    can_send_video_notes=False,
+    can_send_voice_notes=False,
+    can_send_polls=False,
+    can_send_other_messages=False,
+    can_add_web_page_previews=False,
+)
+
+UNLOCKED_PERMISSIONS = ChatPermissions(
+    can_send_messages=True,
+    can_send_audios=True,
+    can_send_documents=True,
+    can_send_photos=True,
+    can_send_videos=True,
+    can_send_video_notes=True,
+    can_send_voice_notes=True,
+    can_send_polls=True,
+    can_send_other_messages=True,
+    can_add_web_page_previews=True,
+)
+
+
+@router.message(Command("yopish", "lock"), F.chat.type.in_({"group", "supergroup"}))
+async def cmd_lock_group(message: Message, bot: Bot, session: AsyncSession) -> None:
+    """Guruhda yozishni to'liq qulflash (faqat to'lov qilganlar yoza oladi)."""
+    user_id = message.from_user.id if message.from_user else 0
+    member = await bot.get_chat_member(message.chat.id, user_id)
+    if member.status not in (ChatMemberStatus.CREATOR, ChatMemberStatus.ADMINISTRATOR):
+        await message.reply("❌ Bu buyruq faqat guruh adminlari uchun!")
+        return
+
+    chat_row = await chats.get_or_create(session, message.chat, owner_id=user_id)
+    chat_row.enabled = True
+    chat_row.mode = ChatMode.PAID
+    await session.commit()
+
+    try:
+        await bot.set_chat_permissions(message.chat.id, permissions=LOCKED_PERMISSIONS)
+    except Exception as e:
+        logger.warning("Guruhni qulflashda xato: %s", e)
+
+    price_sum = int(chat_row.price_mxtr / 1000 * 170) if chat_row.price_mxtr else 10000
+    markup = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="💳 Yozish huquqini sotib olish",
+                    url=f"https://t.me/{settings.bot_username}?start=chat_{abs(message.chat.id)}"
+                    if settings.bot_username
+                    else "https://t.me",
+                )
+            ]
+        ]
+    )
+
+    await message.answer(
+        f"🔒 <b>Guruhda yozish yopildi (Pullik rejim yoqildi)!</b>\n\n"
+        f"Guruh a'zolari faqat to'lov qilgandan so'ng yoza olishadi.\n"
+        f"💰 Tarif: <b>{price_sum:,.0f} so'm</b> / 30 kun\n\n"
+        f"Guruhda yozish ruxsatini olish uchun quyidagi tugmani bosing:",
+        reply_markup=markup,
+        parse_mode="HTML",
+    )
+
+
+@router.message(Command("ochish", "unlock"), F.chat.type.in_({"group", "supergroup"}))
+async def cmd_unlock_group(message: Message, bot: Bot, session: AsyncSession) -> None:
+    """Guruhda yozishni hamma uchun ochish (bepul qilish)."""
+    user_id = message.from_user.id if message.from_user else 0
+    member = await bot.get_chat_member(message.chat.id, user_id)
+    if member.status not in (ChatMemberStatus.CREATOR, ChatMemberStatus.ADMINISTRATOR):
+        await message.reply("❌ Bu buyruq faqat guruh adminlari uchun!")
+        return
+
+    chat_row = await chats.get_or_create(session, message.chat, owner_id=user_id)
+    chat_row.enabled = False
+    chat_row.mode = ChatMode.FREE
+    await session.commit()
+
+    try:
+        await bot.set_chat_permissions(message.chat.id, permissions=UNLOCKED_PERMISSIONS)
+    except Exception as e:
+        logger.warning("Guruhni ochishda xato: %s", e)
+
+    await message.answer("🔓 <b>Guruhda yozish barcha a'zolar uchun ochildi (bepul rejim).</b>", parse_mode="HTML")
+
 
 @router.chat_member(ChatMemberUpdatedFilter(member_status_changed=JOIN_TRANSITION))
 async def on_user_joined_group(event: ChatMemberUpdated, bot: Bot, session: AsyncSession) -> None:
-    """Yangi a'zo guruhga kirganda uni standart holatda MUTE qilish."""
+    """Yangi a'zo guruhga kirganda guruh pullik bo'lsa uni MUTE qilish."""
     chat_id = event.chat.id
     user_id = event.from_user.id
 
@@ -43,17 +136,15 @@ async def on_user_joined_group(event: ChatMemberUpdated, bot: Bot, session: Asyn
         await session.execute(select(ChatSettings).where(ChatSettings.chat_id == chat_id))
     ).scalar_one_or_none()
 
-    if not chat_row or not chat_row.enabled:
+    if not chat_row or not chat_row.enabled or chat_row.mode != ChatMode.PAID:
         return
 
-    # Yangi a'zoni cheklash
     try:
         await bot.restrict_chat_member(
             chat_id=chat_id,
             user_id=user_id,
-            permissions=ChatPermissions(can_send_messages=False),
+            permissions=LOCKED_PERMISSIONS,
         )
-        logger.info("Yangi a'zo %s guruhda (%s) cheklandi", user_id, chat_id)
     except Exception as e:
         logger.warning("Guruh a'zosini cheklashda xatolik: %s", e)
 
@@ -67,12 +158,16 @@ async def check_group_message(message: Message, bot: Bot, session: AsyncSession)
     if user_id == 0 or message.from_user.is_bot:
         return
 
+    # Buyruqlarni o'tkazib yuborish
+    if message.text and message.text.startswith("/"):
+        return
+
     # Guruh sozlamalarini olish
     chat_row = (
         await session.execute(select(ChatSettings).where(ChatSettings.chat_id == chat_id))
     ).scalar_one_or_none()
 
-    if not chat_row or not chat_row.enabled:
+    if not chat_row or not chat_row.enabled or chat_row.mode != ChatMode.PAID:
         return
 
     # Adminlarni tekshirish
@@ -97,9 +192,10 @@ async def check_group_message(message: Message, bot: Bot, session: AsyncSession)
         # Ruxsat mavjud
         return
 
-    # To'lov qilinmagan xabarni o'chirish
+    # To'lov qilinmagan xabarni o'chirish va a'zoni cheklash
     try:
         await message.delete()
+        await bot.restrict_chat_member(chat_id, user_id, permissions=LOCKED_PERMISSIONS)
     except Exception as e:
         logger.debug("Guruh xabarini o'chirib bo'lmadi: %s", e)
 
@@ -131,12 +227,11 @@ async def check_group_message(message: Message, bot: Bot, session: AsyncSession)
         ]
     )
 
-    warn_msg = None
     try:
-        warn_msg = await message.answer(
+        await message.answer(
             f"⚠️ {message.from_user.mention_html()}, bu guruhda yozish <b>pullik</b>.\n\n"
             f"💰 Tarif: <b>{price_sum:,.0f} so'm</b> / 30 kun\n"
-            f"Yozish huquqini faollashtirish uchun to'lovni bajaring:",
+            f"Yozish huquqini ochish uchun to'lovni bajaring:",
             reply_markup=markup,
             parse_mode="HTML",
         )

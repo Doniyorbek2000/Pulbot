@@ -634,6 +634,14 @@ async def group_price_command(
         chat.enabled = True
         if chat.mode == ChatMode.FREE:
             chat.mode = ChatMode.PAID
+        try:
+            from aiogram.types import ChatPermissions
+            await message.bot.set_chat_permissions(
+                message.chat.id,
+                permissions=ChatPermissions(can_send_messages=False),
+            )
+        except Exception:
+            pass
     await session.flush()
 
     chat_fmt = await make_fmt(session, chat.price_currency)
@@ -655,6 +663,34 @@ async def group_free_command(
         await message.reply(_("cmd.admin_only"))
         return
 
+    # Agar @username berilmagan bo'lsa, butun guruhni bepul qilish
+    if not command.args and not message.reply_to_message:
+        chat = await chats.get_or_create(session, message.chat, owner_id=user.id)
+        chat.mode = ChatMode.FREE
+        chat.enabled = False
+        try:
+            from aiogram.types import ChatPermissions
+            await message.bot.set_chat_permissions(
+                message.chat.id,
+                permissions=ChatPermissions(
+                    can_send_messages=True,
+                    can_send_audios=True,
+                    can_send_documents=True,
+                    can_send_photos=True,
+                    can_send_videos=True,
+                    can_send_video_notes=True,
+                    can_send_voice_notes=True,
+                    can_send_polls=True,
+                    can_send_other_messages=True,
+                    can_add_web_page_previews=True,
+                ),
+            )
+        except Exception:
+            pass
+        await session.flush()
+        await message.reply("🔓 Guruh barcha a'zolar uchun bepul qilindi va yozish ochildi.")
+        return
+
     target = None
     if message.reply_to_message and message.reply_to_message.from_user:
         target = await users.get_or_create(session, message.reply_to_message.from_user)
@@ -668,6 +704,27 @@ async def group_free_command(
     await access.set_rule(
         session, target.id, AccessRuleKind.FREE, chat_id=message.chat.id
     )
+    # Ushbu foydalanuvchiga guruhda yozish ruxsatini ochish
+    try:
+        from aiogram.types import ChatPermissions
+        await message.bot.restrict_chat_member(
+            message.chat.id,
+            target.id,
+            permissions=ChatPermissions(
+                can_send_messages=True,
+                can_send_audios=True,
+                can_send_documents=True,
+                can_send_photos=True,
+                can_send_videos=True,
+                can_send_video_notes=True,
+                can_send_voice_notes=True,
+                can_send_polls=True,
+                can_send_other_messages=True,
+                can_add_web_page_previews=True,
+            ),
+        )
+    except Exception:
+        pass
     await message.reply(
         _("inbox.rule_saved", name=target.mention, kind=_("inbox.rule_kind.free"))
     )
