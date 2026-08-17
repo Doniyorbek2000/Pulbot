@@ -439,7 +439,6 @@ async def process_pay_from_balance(
     now = utcnow()
     perm = ActivePermission(
         target_type=TargetType.GROUP_CHAT,
-        target_id=str(target_chat_id),
         owner_id=target_chat_id,
         user_id=user.id,
         expires_at=now + timedelta(days=30),
