@@ -40,6 +40,13 @@ def get_sessionmaker() -> async_sessionmaker[AsyncSession]:
     return _sessionmaker
 
 
+async def get_session():
+    """FastAPI Depends(get_session) uchun asinxron generator."""
+    sessionmaker = get_sessionmaker()
+    async with sessionmaker() as session:
+        yield session
+
+
 async def init_db() -> None:
     """Jadvallarni yaratadi va SQLite uchun WAL rejimini yoqadi."""
     engine = get_engine()

@@ -1,9 +1,4 @@
-"""To'lovlar — hozircha Telegram Stars (XTR).
-
-Boshqa provayderlar (Click, Payme, Uzum, karta) keyinchalik shu yerga
-qo'shiladi: `Payment` yozuvi va `credit_payment()` mantiqi o'zgarmaydi,
-faqat provayderga xos invoice yaratish va callback qismi qo'shiladi.
-"""
+"""To'lovlar moduli — Stars, Click, Payme, CryptoBot, Uzum."""
 
 from __future__ import annotations
 
@@ -75,7 +70,6 @@ async def create_star_invoice(
         payload=payment.payload,
         currency="XTR",
         prices=[LabeledPrice(label=f"{stars} ⭐", amount=stars)],
-        # Stars uchun provider_token bo'sh bo'lishi shart
         provider_token="",
     )
 
@@ -159,7 +153,6 @@ async def refund_star_payment(
 async def recent_topup_mxtr(session: AsyncSession, user_id: int, hours: int) -> int:
     """Oxirgi N soatdagi to'ldirishlar (pul yechishdagi xavfsizlik uchun)."""
     from datetime import timedelta
-
     from sqlalchemy import func
 
     since = utcnow() - timedelta(hours=hours)
