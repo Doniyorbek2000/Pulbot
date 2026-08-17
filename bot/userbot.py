@@ -50,16 +50,18 @@ async def is_user_permitted(sender, sender_id: int, owner_id: int) -> bool:
         async with aiosqlite.connect(DB_PATH) as db:
             # 1. Inbox sozlamalarini tekshirish
             async with db.execute(
-                "SELECT mode, target_policy, free_for_premium FROM inbox_settings WHERE user_id = ?",
+                "SELECT mode, free_for_premium FROM inbox_settings WHERE user_id = ?",
                 (owner_id,)
             ) as cursor:
                 inbox_row = await cursor.fetchone()
                 if inbox_row:
-                    mode, target_policy, free_for_premium = inbox_row
+                    mode, free_for_premium = inbox_row
+                    # AGAR BOT TO'XTATILGAN (OPEN) BO'LSA — 100% HAMMAGA RUXSAT BERILADI, XABARLAR O'CHIRILMAYDI!
                     if mode == "open":
+                        logger.info("Bot to'xtatilgan (open rejim): %s foydalanuvchisiga erkin ruxsat berildi!", sender_id)
                         return True
-                    # Agar kontaktdagilar bepul bo'lsa (default) va bu odam kontakt bo'lsa -> RUXSAT BERILADI
-                    if target_policy != "all_users" and is_contact:
+                    # Kontaktdagilar doimo bepul
+                    if is_contact:
                         logger.info("Foydalanuvchi %s kontaktingizda bo'lgani uchun ruxsat berildi!", sender_id)
                         return True
                     # Agar Premium bepul bo'lsa
@@ -67,8 +69,7 @@ async def is_user_permitted(sender, sender_id: int, owner_id: int) -> bool:
                         logger.info("Foydalanuvchi %s Telegram Premium bo'lgani uchun ruxsat berildi!", sender_id)
                         return True
                 else:
-                    if is_contact:
-                        return True
+                    return True
 
             # 2. Istisnolarda (Oq ro'yxatda) bormi?
             async with db.execute(
@@ -76,6 +77,7 @@ async def is_user_permitted(sender, sender_id: int, owner_id: int) -> bool:
                 (owner_id, sender_id),
             ) as cursor:
                 if await cursor.fetchone():
+                    logger.info("Foydalanuvchi %s Oq ro'yxatda bo'lgani uchun ruxsat berildi!", sender_id)
                     return True
 
             # 3. To'langan aktiv ruxsati bormi?
@@ -100,8 +102,7 @@ async def is_user_permitted(sender, sender_id: int, owner_id: int) -> bool:
                     return True
     except Exception as e:
         logger.error("DB ruxsat tekshirishda xatolik: %s", e)
-        if is_contact:
-            return True
+        return True  # Xatolik bo'lsa hech qachon xabarni xato o'chirmaymiz!
             
     if is_contact:
         return True
