@@ -99,7 +99,7 @@ async def render_inbox(
     builder.button(text="💵 Narxni belgilash", callback_data=InboxCB(action="price"))
     builder.button(text="⏱ Hisoblash usuli (Tarif)", callback_data=InboxCB(action="unit"))
     builder.button(text="🟢 Pul to'lamaydiganlar (Oq ro'yxat)", callback_data=RuleCB(action="list", scope="dm"))
-    builder.button(text="➕ Akkaunt qo'shish", callback_data=RuleCB(action="add_dm"))
+    builder.button(text="➕ Akkaunt qo'shish", callback_data=RuleCB(action="add", scope="dm", kind=AccessRuleKind.FREE))
     builder.button(text="👥 Notanishlar / Kontaktdagilar", callback_data=InboxCB(action="mode"))
     builder.button(text="🧩 Bepul imtiyozlar (Premium/1-xabar)", callback_data=InboxCB(action="extra"))
     builder.button(text=_("common.back"), callback_data=MenuCB(action="home"))
