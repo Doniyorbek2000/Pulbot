@@ -75,11 +75,18 @@ async def _fulfill_dm_session(
     inbox = (
         await session.execute(select(InboxSettings).where(InboxSettings.user_id == owner_id))
     ).scalar_one_or_none()
-    duration_hours = inbox.session_minutes // 60 if inbox and inbox.session_minutes else 24
-    if duration_hours < 1:
-        duration_hours = 24
 
-    expires_at = utcnow() + timedelta(hours=duration_hours)
+    unit = inbox.pricing_unit if inbox and inbox.pricing_unit else "session"
+    is_per_msg = unit == "per_message"
+    
+    if unit == "monthly":
+        duration_hours = 720
+    else:
+        duration_hours = inbox.session_minutes // 60 if inbox and inbox.session_minutes else 24
+        if duration_hours < 1:
+            duration_hours = 24
+
+    expires_at = utcnow() + timedelta(days=365 if is_per_msg else (duration_hours / 24))
 
     # Mavjud ruxsatni tekshirish va yangilash
     stmt = select(ActivePermission).where(
@@ -90,17 +97,21 @@ async def _fulfill_dm_session(
     perm = (await session.execute(stmt)).scalar_one_or_none()
     if perm:
         perm.expires_at = expires_at
+        if is_per_msg:
+            perm.messages_left = (perm.messages_left or 0) + 1
+        else:
+            perm.messages_left = None
     else:
         perm = ActivePermission(
             target_type=TargetType.DM_SESSION,
             owner_id=owner_id,
             user_id=customer_id,
             expires_at=expires_at,
+            messages_left=1 if is_per_msg else None,
         )
         session.add(perm)
 
     # Tushumni hisob egasining hamyoniga o'tkazish (agar mXTR ga bog'liq bo'lsa)
-    # Summa mXTR ga aylantiriladi
     amount_mxtr = order.amount if order.currency == "XTR" else order.amount // 170 * 1000
     if amount_mxtr > 0:
         net, comm = split_commission(amount_mxtr, commission_bps)
@@ -118,18 +129,16 @@ async def _fulfill_dm_session(
 
     # Foydalanuvchilar tilini bilish
     buyer = (await session.execute(select(User).where(User.id == customer_id))).scalar_one_or_none()
-    buyer_lang = buyer.language if buyer else settings.default_language
-
     owner = (await session.execute(select(User).where(User.id == owner_id))).scalar_one_or_none()
-    owner_lang = owner.language if owner else settings.default_language
+
+    tariff_notify = "1 ta xabar yuborish huquqi" if is_per_msg else f"{duration_hours} soat davomida erkin muloqot qilish huquqi"
 
     # Mijozga bildirishnoma
     try:
         await bot.send_message(
             chat_id=customer_id,
             text=f"✅ <b>To'lov muvaffaqiyatli qabul qilindi!</b>\n\n"
-            f"Sizga {owner.mention if owner else 'foydalanuvchi'} bilan {duration_hours} soat davomida "
-            f"erkin muloqot qilish huquqi ochildi.",
+            f"Sizga {owner.mention if owner else 'foydalanuvchi'} bilan {tariff_notify} ochildi.",
             parse_mode="HTML",
         )
     except Exception as e:

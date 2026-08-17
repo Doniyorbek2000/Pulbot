@@ -68,14 +68,23 @@
         </div>
 
         <div class="form-group">
+          <label class="form-label">Hisoblash usuli (Tarif turi)</label>
+          <select class="form-input" id="dm-pricing-unit" onchange="onPricingUnitChange(this.value)">
+            <option value="per_message">✉️ Bir martalik (Har bir xabar uchun)</option>
+            <option value="session" selected>⏱ 24 soatlik erkin muloqot</option>
+            <option value="monthly">📅 Oylik / 30 kunlik cheksiz obuna</option>
+          </select>
+        </div>
+
+        <div class="form-group">
           <label class="form-label">Muloqot narxi (so'mda)</label>
           <div class="range-wrap">
-            <input type="range" class="range-slider" id="dm-price-slider" min="1000" max="200000" step="1000" value="10000" oninput="syncPrice(this.value, true)" />
+            <input type="range" class="range-slider" id="dm-price-slider" min="1000" max="500000" step="1000" value="10000" oninput="syncPrice(this.value, true)" />
             <input type="number" class="form-input" style="width: 120px;" id="dm-price-input" value="10000" oninput="syncPrice(this.value, false)" />
           </div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" id="dm-duration-wrap">
           <label class="form-label">Ruxsat muddati (soatda)</label>
           <input type="number" class="form-input" id="dm-duration-input" value="24" min="1" max="720" />
         </div>

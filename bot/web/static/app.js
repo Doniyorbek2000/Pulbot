@@ -63,8 +63,25 @@ async function loadDashboard() {
     document.getElementById("dm-price-slider").value = data.dm_settings.price_sum;
     document.getElementById("dm-duration-input").value = data.dm_settings.session_hours;
     document.getElementById("dm-welcome-input").value = data.dm_settings.welcome_text || "";
+    if (data.dm_settings.pricing_unit) {
+      document.getElementById("dm-pricing-unit").value = data.dm_settings.pricing_unit;
+      onPricingUnitChange(data.dm_settings.pricing_unit);
+    }
   } catch (err) {
     console.error(err);
+  }
+}
+
+function onPricingUnitChange(unit) {
+  const durationWrap = document.getElementById("dm-duration-wrap");
+  const durationInput = document.getElementById("dm-duration-input");
+  if (unit === "per_message") {
+    if (durationWrap) durationWrap.style.display = "none";
+  } else if (unit === "monthly") {
+    if (durationWrap) durationWrap.style.display = "none";
+    if (durationInput) durationInput.value = 720;
+  } else {
+    if (durationWrap) durationWrap.style.display = "block";
   }
 }
 
@@ -80,15 +97,17 @@ function syncPrice(val, fromSlider = true) {
 // Save DM Settings
 async function saveDMSettings() {
   const enabled = document.getElementById("dm-toggle").checked;
+  const pricing_unit = document.getElementById("dm-pricing-unit").value || "session";
   const price_sum = parseInt(document.getElementById("dm-price-input").value, 10) || 10000;
-  const session_hours = parseInt(document.getElementById("dm-duration-input").value, 10) || 24;
+  let session_hours = parseInt(document.getElementById("dm-duration-input").value, 10) || 24;
+  if (pricing_unit === "monthly") session_hours = 720;
   const welcome_text = document.getElementById("dm-welcome-input").value;
 
   try {
     const res = await fetch("/api/settings/dm", {
       method: "POST",
       headers,
-      body: JSON.stringify({ enabled, price_sum, session_hours, welcome_text }),
+      body: JSON.stringify({ enabled, pricing_unit, price_sum, session_hours, welcome_text }),
     });
     const result = await res.json();
     if (res.ok && result.ok) {

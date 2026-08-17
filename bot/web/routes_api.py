@@ -102,6 +102,7 @@ async def get_current_user(
 
 class DMSettingsUpdate(BaseModel):
     enabled: bool
+    pricing_unit: str = "session"  # per_message, session, monthly
     price_sum: int
     session_hours: int = 24
     welcome_text: Optional[str] = None
@@ -170,6 +171,7 @@ async def get_dashboard(
         },
         "dm_settings": {
             "enabled": inbox.mode == InboxMode.PAID if inbox else False,
+            "pricing_unit": inbox.pricing_unit if inbox and inbox.pricing_unit else "session",
             "price_sum": dm_price_sum,
             "session_hours": inbox.session_minutes // 60 if inbox else 24,
             "welcome_text": inbox.welcome_text if inbox else "",
@@ -197,10 +199,13 @@ async def update_dm_settings(
         session.add(inbox)
 
     inbox.mode = InboxMode.PAID if body.enabled else InboxMode.OPEN
+    inbox.pricing_unit = body.pricing_unit
     # so'mdan mXTR ga: (sum / 170) * 1000
-    inbox.price_mxtr = int((body.price_sum / 170) * 1000)
-    inbox.session_minutes = max(60, body.session_hours * 60)
-    inbox.welcome_text = body.welcome_text
+    inbox.price_mxtr = int(body.price_sum / 170 * 1000)
+    inbox.session_minutes = body.session_hours * 60
+    if body.welcome_text is not None:
+        inbox.welcome_text = body.welcome_text.strip() or None
+
     await session.commit()
 
     return {"ok": True, "message": "Sozlamalar muvaffaqiyatli saqlandi"}

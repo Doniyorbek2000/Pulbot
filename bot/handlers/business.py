@@ -208,8 +208,14 @@ async def handle_business_message(message: Message, bot: Bot, session: AsyncSess
     )
     active_perm = (await session.execute(active_stmt)).scalar_one_or_none()
     if active_perm:
-        # Ruxsat mavjud, xabar erkin o'tadi
-        return
+        if active_perm.messages_left is not None:
+            if active_perm.messages_left > 0:
+                active_perm.messages_left -= 1
+                await session.commit()
+                return  # 1 ta xabar ruxsatidan foydalandi
+        else:
+            # Vaqtinchalik sessiya (24 soat yoki 30 kun)
+            return
 
     # 5. RUXSAT YO'Q: To'lanmagan xabarni shaxsiy chatdan o'chirishga harakat qilish
     try:
@@ -220,6 +226,18 @@ async def handle_business_message(message: Message, bot: Bot, session: AsyncSess
     price_sum = int(inbox.price_mxtr / 1000 * 170) if inbox.price_mxtr else 10000
     if price_sum < 1000:
         price_sum = 10000
+
+    unit = inbox.pricing_unit or "session"
+    if unit == "per_message":
+        tariff_str = "1 ta xabar uchun (Bir martalik)"
+        duration_str = "1 ta xabar"
+    elif unit == "monthly":
+        tariff_str = "30 kunlik erkin muloqot (Oylik)"
+        duration_str = "30 kun"
+    else:
+        hours = max(1, inbox.session_minutes // 60) if inbox.session_minutes else 24
+        tariff_str = f"{hours} soatlik muloqot"
+        duration_str = f"{hours} soat"
 
     order = await create_payment_order(
         session,
@@ -261,12 +279,11 @@ async def handle_business_message(message: Message, bot: Bot, session: AsyncSess
         f"Salom! Men bilan bog'lanish pullik asosda tashkil etilgan.\n\n"
         f"Muloqot qilish uchun quyidagi to'lov tizimlaridan biri orqali to'lovni amalga oshiring."
     )
-    owner_name = owner.mention if hasattr(owner, 'mention') else "foydalanuvchi"
     text = (
         f"🔒 <b>Pullik Muloqot (DM Paywall)</b>\n\n"
         f"{welcome_text}\n\n"
-        f"💰 Narxi: <b>{price_sum:,.0f} so'm</b>\n"
-        f"⏱ Muloqot davomiyligi: <b>24 soat</b>\n\n"
+        f"💰 Narxi: <b>{price_sum:,.0f} so'm</b> ({tariff_str})\n"
+        f"⏱ Ruxsat: <b>{duration_str}</b>\n\n"
         f"To'lov qilganingizdan so'ng xabaringiz qabul qilinadi va egasiga yetkaziladi."
     )
 
