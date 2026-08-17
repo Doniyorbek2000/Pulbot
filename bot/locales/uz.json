@@ -1,7 +1,7 @@
 {
   "botprofile": {
     "short_description": "Sizga yozish uchun haq oladigan bot — shaxsiy xabar, guruh va kanallar uchun. To'lov: yulduzcha, so'm yoki dollar.",
-    "description": "🌟 PulBot — xabarlar uchun haq oladigan bot.\n\nNarxni o'zingiz belgilaysiz, kim yozsa — to'laydi. Pul kafolatda turadi va siz javob berganingizdan keyin hisobingizga o'tadi.\n\nShaxsiy xabarlar, guruhlar va kanallar uchun ishlaydi. Pulni karta, Payme, Click yoki USDT orqali yechib olasiz.\n\nBoshlash uchun /start bosing."
+    "description": "🌟 Dofa Bot — xabarlar uchun haq oladigan bot.\n\nNarxni o'zingiz belgilaysiz, kim yozsa — to'laydi. Pul kafolatda turadi va siz javob berganingizdan keyin hisobingizga o'tadi.\n\nShaxsiy xabarlar, guruhlar va kanallar uchun ishlaydi. Pulni karta, Payme, Click yoki USDT orqali yechib olasiz.\n\nBoshlash uchun /start bosing."
   },
   "common": {
     "back": "⬅️ Orqaga",
@@ -50,7 +50,7 @@
     "USD": "💵 Dollar"
   },
   "start": {
-    "welcome": "👋 Assalomu alaykum, {name}!\n\n<b>PulBot</b> — sizga yozish uchun haq oladigan bot.\n\n⭐ To'lovlar Telegram Yulduzchalari orqali\n💬 Shaxsiy xabarlar, guruhlar va kanallar uchun\n💳 Balansni to'ldiring, ishlang, pulni yeching\n\nQuyidagi menyudan boshlang 👇",
+    "welcome": "👋 Assalomu alaykum, {name}!\n\n<b>Dofa Bot</b> — sizga yozish uchun haq oladigan bot.\n\n⭐ To'lovlar Telegram Yulduzchalari orqali\n💬 Shaxsiy xabarlar, guruhlar va kanallar uchun\n💳 Balansni to'ldiring, ishlang, pulni yeching\n\nQuyidagi menyudan boshlang 👇",
     "welcome_back": "🏠 Asosiy menyu",
     "how_it_works": "ℹ️ <b>Qanday ishlaydi?</b>\n\n1️⃣ <b>Narx belgilang.</b> Sizga yozish uchun qancha to'lash kerakligini o'zingiz belgilaysiz — so'mda, dollarda yoki yulduzchada.\n\n2️⃣ <b>Havolangizni ulashing.</b> Sizga yozmoqchi bo'lgan odam shu havola orqali kiradi.\n\n3️⃣ <b>U to'laydi — siz olasiz.</b> Pul avtomatik balansingizga tushadi.\n\n4️⃣ <b>Pulni yeching.</b> Karta, Payme, Click yoki USDT orqali.\n\n💡 Telegram Premium egalari uchun bepul qilib qo'yish, do'stlarni istisnoga kiritish, tungi vaqtga boshqa narx belgilash — hammasi mumkin."
   },
@@ -78,7 +78,7 @@
     "custom": "✏️ Boshqa summa",
     "enter_amount": "Summani yulduzchada kiriting (masalan: <code>250</code>).\n\nMinimal: {min} ⭐\n💡 Taxminan: 1 ⭐ ≈ {rate}",
     "invoice_title": "Balansni to'ldirish",
-    "invoice_desc": "{stars} ⭐ PulBot hisobingizga qo'shiladi",
+    "invoice_desc": "{stars} ⭐ Dofa Bot hisobingizga qo'shiladi",
     "pay_button": "⭐ {stars} yulduzcha to'lash",
     "success": "✅ <b>To'lov qabul qilindi!</b>\n\n➕ Qo'shildi: <b>{amount}</b>\n💰 Yangi balans: <b>{balance}</b>\n\n🧾 Chek raqami: <code>{charge_id}</code>",
     "pending": "⏳ To'lov kutilmoqda...",
@@ -419,7 +419,7 @@
   },
   "help": {
     "title": "ℹ️ <b>Yordam</b>",
-    "text": "ℹ️ <b>PulBot yordam</b>\n\n<b>Asosiy buyruqlar</b>\n/start — asosiy menyu\n/balans — hamyon\n/narx — narxni tez o'zgartirish\n/havola — havolangiz\n/yechish — pul yechish\n/til — tilni o'zgartirish\n/yordam — shu sahifa\n\n<b>Guruhda</b>\n/sozlash — guruh sozlamalari (admin uchun)\n/narx 5000 — narxni belgilash\n/bepul @user — istisnoga qo'shish\n/bloklash @user — bloklash\n\n<b>Savollar</b>\n💬 Qo'llab-quvvatlash: {support}",
+    "text": "ℹ️ <b>Dofa Bot yordam</b>\n\n<b>Asosiy buyruqlar</b>\n/start — asosiy menyu\n/balans — hamyon\n/narx — narxni tez o'zgartirish\n/havola — havolangiz\n/yechish — pul yechish\n/til — tilni o'zgartirish\n/yordam — shu sahifa\n\n<b>Guruhda</b>\n/sozlash — guruh sozlamalari (admin uchun)\n/narx 5000 — narxni belgilash\n/bepul @user — istisnoga qo'shish\n/bloklash @user — bloklash\n\n<b>Savollar</b>\n💬 Qo'llab-quvvatlash: {support}",
     "faq_btn": "❓ Ko'p so'raladigan savollar",
     "faq": "❓ <b>Ko'p so'raladigan savollar</b>\n\n<b>Pul qayerdan keladi?</b>\nSizga yozmoqchi bo'lgan odam Telegram Yulduzchalari orqali to'laydi. Yulduzchani u istalgan usulda — karta, Apple Pay, Google Pay orqali sotib oladi.\n\n<b>Komissiya qancha?</b>\nPlatforma har bir to'lovdan {commission}% oladi. Qolgani sizniki.\n\n<b>Pulni qanday yechaman?</b>\nHamyon → Pul yechish. Karta, Payme, Click yoki USDT tanlaysiz. So'rov 24 soat ichida ko'rib chiqiladi.\n\n<b>Kafolat (escrow) nima?</b>\nSizga pullik xabar kelganda pul darrov emas, balki siz javob berganingizdan keyin o'tadi. Bu yozuvchi uchun kafolat — javob olmasa puli qaytadi.\n\n<b>Guruhda qanday ishlaydi?</b>\nBotni guruhga admin qilib qo'shasiz, narx belgilaysiz. Kim yozsa — balansidan pul yechiladi va sizga o'tadi. Adminlar, Premium egalari yoki tanlagan odamlaringiz uchun bepul qilib qo'yish mumkin."
   },

@@ -1,7 +1,7 @@
 {
   "botprofile": {
     "short_description": "A bot that charges people to message you — for DMs, groups and channels. Paid in Stars, UZS or USD.",
-    "description": "🌟 PulBot — a bot that charges for messages.\n\nYou set the price, whoever writes to you pays. The money is held in escrow and moves to your balance once you reply.\n\nWorks for direct messages, groups and channels. Withdraw to card, Payme, Click or USDT.\n\nPress /start to begin."
+    "description": "🌟 Dofa Bot — a bot that charges for messages.\n\nYou set the price, whoever writes to you pays. The money is held in escrow and moves to your balance once you reply.\n\nWorks for direct messages, groups and channels. Withdraw to card, Payme, Click or USDT.\n\nPress /start to begin."
   },
   "common": {
     "back": "⬅️ Back",
@@ -50,7 +50,7 @@
     "USD": "💵 Dollar"
   },
   "start": {
-    "welcome": "👋 Hello, {name}!\n\n<b>PulBot</b> — the bot that charges people for messaging you.\n\n⭐ Payments via Telegram Stars\n💬 Direct messages, groups and channels\n💳 Top up, earn, withdraw\n\nStart from the menu below 👇",
+    "welcome": "👋 Hello, {name}!\n\n<b>Dofa Bot</b> — the bot that charges people for messaging you.\n\n⭐ Payments via Telegram Stars\n💬 Direct messages, groups and channels\n💳 Top up, earn, withdraw\n\nStart from the menu below 👇",
     "welcome_back": "🏠 Main menu",
     "how_it_works": "ℹ️ <b>How it works</b>\n\n1️⃣ <b>Set your price.</b> You decide what it costs to message you — in sum, dollars or stars.\n\n2️⃣ <b>Share your link.</b> Anyone who wants to reach you goes through it.\n\n3️⃣ <b>They pay, you earn.</b> The money lands in your balance automatically.\n\n4️⃣ <b>Withdraw.</b> Card, Payme, Click or USDT.\n\n💡 Free for Telegram Premium users, exceptions for friends, a different price at night — all configurable."
   },
@@ -78,7 +78,7 @@
     "custom": "✏️ Custom amount",
     "enter_amount": "Enter the amount in stars (e.g. <code>250</code>).\n\nMinimum: {min} ⭐\n💡 Roughly: 1 ⭐ ≈ {rate}",
     "invoice_title": "Balance top-up",
-    "invoice_desc": "{stars} ⭐ will be credited to your PulBot account",
+    "invoice_desc": "{stars} ⭐ will be credited to your Dofa Bot account",
     "pay_button": "⭐ Pay {stars} stars",
     "success": "✅ <b>Payment received!</b>\n\n➕ Credited: <b>{amount}</b>\n💰 New balance: <b>{balance}</b>\n\n🧾 Receipt: <code>{charge_id}</code>",
     "pending": "⏳ Waiting for payment...",
@@ -419,7 +419,7 @@
   },
   "help": {
     "title": "ℹ️ <b>Help</b>",
-    "text": "ℹ️ <b>PulBot help</b>\n\n<b>Main commands</b>\n/start — main menu\n/balans — wallet\n/narx — quickly change your price\n/havola — your link\n/yechish — withdraw\n/til — change language\n/yordam — this page\n\n<b>In a group</b>\n/sozlash — group settings (admins)\n/narx 5000 — set the price\n/bepul @user — add an exception\n/bloklash @user — block someone\n\n<b>Questions</b>\n💬 Support: {support}",
+    "text": "ℹ️ <b>Dofa Bot help</b>\n\n<b>Main commands</b>\n/start — main menu\n/balans — wallet\n/narx — quickly change your price\n/havola — your link\n/yechish — withdraw\n/til — change language\n/yordam — this page\n\n<b>In a group</b>\n/sozlash — group settings (admins)\n/narx 5000 — set the price\n/bepul @user — add an exception\n/bloklash @user — block someone\n\n<b>Questions</b>\n💬 Support: {support}",
     "faq_btn": "❓ FAQ",
     "faq": "❓ <b>Frequently asked questions</b>\n\n<b>Where does the money come from?</b>\nThe person messaging you pays with Telegram Stars, which they buy however they like — card, Apple Pay, Google Pay.\n\n<b>What's the commission?</b>\nThe platform takes {commission}% of each payment. The rest is yours.\n\n<b>How do I withdraw?</b>\nWallet → Withdraw. Pick card, Payme, Click or USDT. Requests are handled within 24 hours.\n\n<b>What is escrow?</b>\nWhen a paid message arrives, the money is credited after you reply, not before. It's a guarantee for the sender — no reply, money back.\n\n<b>How does it work in groups?</b>\nAdd the bot as an admin and set a price. Whoever writes is charged, and the money goes to you. Admins, Premium users or people you pick can write for free."
   },

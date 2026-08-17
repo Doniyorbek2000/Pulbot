@@ -71,7 +71,7 @@ def get_payme_url(order_id: str, amount_tiyin: int) -> str:
 
 
 async def create_cryptobot_invoice(
-    order_id: str, amount_usd: float, description: str = "PulBot to'lovi"
+    order_id: str, amount_usd: float, description: str = "Dofa Bot to'lovi"
 ) -> str | None:
     """CryptoBot API orqali to'lov havolasini oladi."""
     if not settings.cryptobot_token:
