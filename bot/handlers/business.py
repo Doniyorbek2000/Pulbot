@@ -211,7 +211,12 @@ async def handle_business_message(message: Message, bot: Bot, session: AsyncSess
         # Ruxsat mavjud, xabar erkin o'tadi
         return
 
-    # 5. RUXSAT YO'Q: To'lov talab qilish (Paywall)
+    # 5. RUXSAT YO'Q: To'lanmagan xabarni shaxsiy chatdan o'chirishga harakat qilish
+    try:
+        await bot.delete_message(chat_id=chat_id, message_id=message.message_id)
+    except Exception as e:
+        logger.debug("Business xabarni o'chirib bo'lmadi: %s", e)
+
     price_sum = int(inbox.price_mxtr / 1000 * 170) if inbox.price_mxtr else 10000
     if price_sum < 1000:
         price_sum = 10000
