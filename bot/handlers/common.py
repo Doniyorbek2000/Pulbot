@@ -48,13 +48,17 @@ async def render_main_menu(
     *,
     edit: bool = True,
 ) -> None:
+    from bot.db.enums import InboxMode
     balance_mxtr, _available = await wallet.balance(session, user.id)
+    inbox = await users.get_inbox(session, user.id)
+    is_active = inbox.mode in (InboxMode.PAID, InboxMode.PREMIUM_OR_PAID)
+
     text = _(
         "menu.title",
         balance=fmt(balance_mxtr),
         link=users.deep_link(user.public_code),
     )
-    keyboard = main_menu(_, is_admin=user.is_admin)
+    keyboard = main_menu(_, is_admin=user.is_admin, is_active=is_active)
     if edit and isinstance(event, CallbackQuery):
         await safe_edit(event, text, keyboard, disable_web_page_preview=True)
     else:

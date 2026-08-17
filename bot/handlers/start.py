@@ -273,6 +273,24 @@ async def back_home(
     await query.answer()
 
 
+@router.callback_query(MenuCB.filter(F.action == "toggle_bot"))
+async def toggle_bot_from_main(
+    query: CallbackQuery, session: AsyncSession, user: User, _: Translator, fmt
+) -> None:
+    """Asosiy menyudan botni to'liq to'xtatish yoki yoqish."""
+    from bot.db.enums import InboxMode
+    inbox = await users.get_inbox(session, user.id)
+    if inbox.mode in (InboxMode.PAID, InboxMode.PREMIUM_OR_PAID):
+        inbox.mode = InboxMode.OPEN
+        await session.commit()
+        await query.answer("⏸ Bot to'xtatildi! Endi boshqa odamlar yozgan xabarlar o'chirilmaydi va bepul bo'ladi.", show_alert=True)
+    else:
+        inbox.mode = InboxMode.PAID
+        await session.commit()
+        await query.answer("▶️ Bot yoqildi! Pullik xabarlar va himoya faollashtirildi.", show_alert=True)
+    await render_main_menu(query, session, user, _, fmt)
+
+
 @router.message(Command("menu", "asosiy"))
 async def cmd_menu(
     message: Message,

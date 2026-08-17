@@ -25,10 +25,15 @@ def language_keyboard() -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
-def main_menu(_: Translator, *, is_admin: bool = False) -> InlineKeyboardMarkup:
+def main_menu(_: Translator, *, is_admin: bool = False, is_active: bool = True) -> InlineKeyboardMarkup:
     from aiogram.types import WebAppInfo
 
     builder = InlineKeyboardBuilder()
+    if is_active:
+        builder.button(text="⏸ Botni to'xtatish (Hamma bepul yozsin)", callback_data=MenuCB(action="toggle_bot"))
+    else:
+        builder.button(text="▶️ Botni yoqish (Pullik rejim)", callback_data=MenuCB(action="toggle_bot"))
+
     if settings.webapp_base_url and settings.webapp_base_url.startswith("https://"):
         builder.button(
             text="📱 Mini App Dashboard",
@@ -42,7 +47,7 @@ def main_menu(_: Translator, *, is_admin: bool = False) -> InlineKeyboardMarkup:
     builder.button(text=_("menu.help"), callback_data=MenuCB(action="help"))
     if is_admin:
         builder.button(text=_("menu.admin"), callback_data=MenuCB(action="admin"))
-    builder.adjust(1, 2, 2, 2)
+    builder.adjust(1, 1, 2, 2, 2)
     return builder.as_markup()
 
 
