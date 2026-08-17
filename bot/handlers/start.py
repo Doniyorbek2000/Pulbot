@@ -78,13 +78,12 @@ async def start_with_payload(
                     callback_data="wallet:topup"
                 )
             ])
-
-        buttons.append([
-            InlineKeyboardButton(text="🔹 Click orqali to'lash", url=click_url),
-            InlineKeyboardButton(text="🟢 Payme orqali to'lash", url=payme_url),
-        ])
-        if crypto_url:
-            buttons.append([InlineKeyboardButton(text="💎 USDT / TON (@CryptoBot)", url=crypto_url)])
+            buttons.append([
+                InlineKeyboardButton(text="🔹 Click orqali to'lash", url=click_url),
+                InlineKeyboardButton(text="🟢 Payme orqali to'lash", url=payme_url),
+            ])
+            if crypto_url:
+                buttons.append([InlineKeyboardButton(text="💎 USDT / TON (@CryptoBot)", url=crypto_url)])
 
         markup = InlineKeyboardMarkup(inline_keyboard=buttons)
         await message.answer(

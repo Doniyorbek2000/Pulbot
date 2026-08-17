@@ -255,26 +255,18 @@ async def handle_business_message(message: Message, bot: Bot, session: AsyncSess
     payme_url = get_payme_url(order.id, price_sum * 100)
     crypto_url = await create_cryptobot_invoice(order.id, round(price_sum / 12800, 2))
 
-    buttons = [
-        [
-            InlineKeyboardButton(text="🔹 Click orqali to'lash", url=click_url),
-            InlineKeyboardButton(text="🟢 Payme orqali to'lash", url=payme_url),
-        ]
-    ]
-    if crypto_url:
-        buttons.append([InlineKeyboardButton(text="💎 USDT / TON (@CryptoBot)", url=crypto_url)])
-
-    if settings.bot_username:
-        buttons.append(
+    markup = InlineKeyboardMarkup(
+        inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="⭐ Telegram Stars / Balansdan",
-                    url=f"https://t.me/{settings.bot_username}?start=pay_{order.id}",
+                    text=f"💳 Muloqot huquqini sotib olish ({price_sum:,.0f} so'm)",
+                    url=f"https://t.me/{settings.bot_username}?start=pay_{order.id}"
+                    if settings.bot_username
+                    else "https://t.me",
                 )
             ]
-        )
-
-    markup = InlineKeyboardMarkup(inline_keyboard=buttons)
+        ]
+    )
     welcome_text = inbox.welcome_text or (
         f"Salom! Men bilan bog'lanish pullik asosda tashkil etilgan.\n\n"
         f"Muloqot qilish uchun quyidagi to'lov tizimlaridan biri orqali to'lovni amalga oshiring."
