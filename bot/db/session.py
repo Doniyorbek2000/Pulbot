@@ -57,6 +57,18 @@ async def init_db() -> None:
             await conn.execute(text("PRAGMA journal_mode=WAL"))
             await conn.execute(text("PRAGMA foreign_keys=ON"))
         await conn.run_sync(Base.metadata.create_all)
+
+        # SQLite avtomatik migratsiyasi (mavjud jadvallarga yangi ustunlarni qo'shish)
+        if settings.database_url.startswith("sqlite"):
+            from sqlalchemy import text
+            for col_sql in [
+                "ALTER TABLE users ADD COLUMN business_connection_id VARCHAR(128)",
+                "ALTER TABLE users ADD COLUMN business_enabled BOOLEAN DEFAULT 1",
+            ]:
+                try:
+                    await conn.execute(text(col_sql))
+                except Exception:
+                    pass
     logger.info("Ma'lumotlar bazasi tayyor: %s", settings.database_url.split("://")[0])
 
 
