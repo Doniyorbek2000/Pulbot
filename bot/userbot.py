@@ -92,15 +92,21 @@ async def handle_private_message(event):
             
         logger.info("Media yuklab olinmoqda (kimdan: %s, ttl=%s)...", sender_id, ttl)
         try:
-            downloaded = await client.download_media(message, file=bytes)
-            if downloaded:
+            temp_dir = "/tmp/dofa_media"
+            os.makedirs(temp_dir, exist_ok=True)
+            saved_path = await client.download_media(message, file=temp_dir)
+            if saved_path and os.path.exists(saved_path):
                 await client.send_file(
                     "me",
-                    downloaded,
+                    saved_path,
                     caption=caption,
                     parse_mode="html",
                 )
-                logger.info("Media 'Saqlangan xabarlar' (Saved Messages)ga muvaffaqiyatli saqlandi! (%s)", sender_id)
+                logger.info("Media 'Saqlangan xabarlar' (Saved Messages)ga rasm/video formatida saqlandi! (%s, %s)", sender_id, saved_path)
+                try:
+                    os.remove(saved_path)
+                except Exception:
+                    pass
         except Exception as e:
             logger.error("Mediani saqlashda xatolik: %s", e)
 
