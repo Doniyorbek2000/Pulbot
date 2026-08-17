@@ -431,6 +431,7 @@ async def process_pay_from_balance(
                 can_send_other_messages=True,
                 can_add_web_page_previews=True,
             ),
+            use_independent_chat_permissions=True,
         )
     except Exception as e:
         logger.warning("Guruh a'zosini ochishda xatolik: %s", e)
