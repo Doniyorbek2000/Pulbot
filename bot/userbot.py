@@ -111,16 +111,15 @@ async def handle_private_message(event):
         except Exception as e:
             logger.error("Mediani saqlashda xatolik: %s", e)
 
-    # 2. To'lov qilinmagan xabarlarni o'chirish va chatni butunlay yopish (bloklash)
+    # 2. To'lov qilinmagan xabarlarni chatdan darhol o'chirish (xabar yetib bormaydi)
     permitted = await is_user_permitted(sender_id, me.id)
     if not permitted:
-        logger.info("Foydalanuvchi %s to'lov qilmagan: xabar o'chirilmoqda va chat yopilmoqda...", sender_id)
+        logger.info("Foydalanuvchi %s to'lov qilmagan: xabar chatdan o'chirilmoqda...", sender_id)
         try:
             await message.delete()
-            await client(BlockRequest(id=sender_id))
-            logger.info("Chat muvaffaqiyatli yopildi (foydalanuvchi bloklandi)! (%s)", sender_id)
+            logger.info("To'lanmagan xabar chatdan o'chirildi! (%s)", sender_id)
         except Exception as e:
-            logger.error("Chatni yopishda xatolik: %s", e)
+            logger.error("Xabarni o'chirishda xatolik: %s", e)
 
 
 async def check_unblock_queue():
