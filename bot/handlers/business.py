@@ -129,7 +129,6 @@ async def handle_business_message(message: Message, bot: Bot, session: AsyncSess
     stmt = select(User).where(User.business_connection_id == message.business_connection_id)
     owner = (await session.execute(stmt)).scalar_one_or_none()
     
-    # Agar connection_id DBda saqlanmagan bo'lsa, chat_id yoki birinchi admin orqali bog'lash
     if not owner:
         # Eng oxirgi faol admin/user ni topish
         stmt_admin = select(User).where(User.id != message.from_user.id if message.from_user else True).order_by(User.created_at.desc())
@@ -197,7 +196,6 @@ async def handle_business_message(message: Message, bot: Bot, session: AsyncSess
         if rule.kind == AccessRuleKind.FREE:
             return  # Oq ro'yxatda, bepul
         if rule.kind == AccessRuleKind.BLOCKED:
-            # Bloklangan, xabarni e'tiborsiz qoldirish
             return
 
     # 4. Foydalanuvchining aktiv to'langan ruxsati bormi?
@@ -258,6 +256,7 @@ async def handle_business_message(message: Message, bot: Bot, session: AsyncSess
         f"Salom! Men bilan bog'lanish pullik asosda tashkil etilgan.\n\n"
         f"Muloqot qilish uchun quyidagi to'lov tizimlaridan biri orqali to'lovni amalga oshiring."
     )
+    owner_name = owner.mention if hasattr(owner, 'mention') else "foydalanuvchi"
     text = (
         f"🔒 <b>Pullik Muloqot (DM Paywall)</b>\n\n"
         f"{welcome_text}\n\n"
@@ -266,8 +265,9 @@ async def handle_business_message(message: Message, bot: Bot, session: AsyncSess
         f"To'lov qilganingizdan so'ng xabaringiz qabul qilinadi va egasiga yetkaziladi."
     )
 
+    # 1-usul: Telegram Business orqali to'g'ridan-to'g'ri suhbatga yuborish
+    sent = False
     try:
-        # Xabarni to'g'ridan-to'g'ri suhbatga (business connection orqali) javob qilib yuboramiz
         await bot.send_message(
             chat_id=chat_id,
             text=text,
@@ -275,6 +275,23 @@ async def handle_business_message(message: Message, bot: Bot, session: AsyncSess
             parse_mode="HTML",
             business_connection_id=message.business_connection_id,
         )
-        logger.info("Business paywall reply sent to chat_id=%s", chat_id)
+        sent = True
+        logger.info("Business paywall sent via business connection to chat %s", chat_id)
     except Exception as e:
-        logger.warning("Business paywall xabarini yuborishda xatolik: %s", e)
+        logger.warning("Business connection orqali xabar yuborilmadi (%s), botdan to'g'ridan-to'g'ri yuboriladi.", e)
+
+    # 2-usul: Agar business connection orqali o'tmasa, botdan to'g'ridan-to'g'ri foydalanuvchiga yuborish
+    if not sent and sender_id:
+        try:
+            await bot.send_message(
+                chat_id=sender_id,
+                text=f"🔒 <b>{owner.first_name or 'Foydalanuvchi'} bilan pullik muloqot</b>\n\n"
+                f"Siz yuborgan xabar egasiga yetkazilishi uchun to'lovni amalga oshiring:\n\n"
+                f"💰 Narxi: <b>{price_sum:,.0f} so'm</b>\n"
+                f"⏱ Muloqot davomiyligi: <b>24 soat</b>",
+                reply_markup=markup,
+                parse_mode="HTML",
+            )
+            logger.info("Business paywall sent directly via bot to sender %s", sender_id)
+        except Exception as e2:
+            logger.warning("Botdan to'g'ridan-to'g'ri yuborishda xato: %s", e2)
