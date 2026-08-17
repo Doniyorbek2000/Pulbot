@@ -19,6 +19,7 @@ API_ID = 37491042
 API_HASH = "de05c1332ab6f269d5a208262cf27910"
 SESSION_PATH = "/opt/pulbot/userbot.session"
 DB_PATH = "/opt/pulbot/pulbot.db"
+BOT_ID = 8557215610
 
 client = TelegramClient(SESSION_PATH, API_ID, API_HASH)
 
@@ -115,9 +116,13 @@ async def handle_private_message(event):
     sender = await event.get_sender()
     sender_id = event.sender_id
     
-    # Hisob egasining o'zi yozgan bo'lsa e'tiborsiz qoldirish
+    # 1. Hisob egasining o'zi yozgan bo'lsa e'tiborsiz qoldirish
     me = await client.get_me()
     if sender_id == me.id:
+        return
+
+    # 2. Botlar va bot chatlariga (shu jumladan Dofa botga) aslo tegmaymiz
+    if getattr(sender, 'bot', False) is True or sender_id == BOT_ID or event.chat_id == BOT_ID:
         return
 
     has_media = message.media is not None
@@ -128,7 +133,7 @@ async def handle_private_message(event):
     user_ref = f"@{username}" if username else f"ID: {sender_id}"
     time_str = datetime.now().strftime("%H:%M:%S, %d.%m.%Y")
     
-    # 1. 1-martalik yoki har qanday mediani Saved Messages ga saqlash
+    # 3. 1-martalik yoki har qanday mediani Saved Messages ga saqlash
     if has_media:
         ttl_label = f" (⏱ {ttl} soniyalik 1 martalik o'chib ketadigan rasm/video)" if ttl else ""
         caption = (
@@ -159,7 +164,7 @@ async def handle_private_message(event):
         except Exception as e:
             logger.error("Mediani saqlashda xatolik: %s", e)
 
-    # 2. Faqat to'lov qilinmagan NOTANISH xabarlarni chatdan o'chirish
+    # 4. Faqat to'lov qilinmagan NOTANISH insonlar xabarlarini chatdan o'chirish
     permitted = await is_user_permitted(sender, sender_id, me.id)
     if not permitted:
         logger.info("Foydalanuvchi %s to'lov qilmagan va notanish: xabar chatdan o'chirilmoqda...", sender_id)
