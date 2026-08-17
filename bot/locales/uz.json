@@ -55,7 +55,7 @@
     "how_it_works": "ℹ️ <b>Qanday ishlaydi?</b>\n\n1️⃣ <b>Narx belgilang.</b> Sizga yozish uchun qancha to'lash kerakligini o'zingiz belgilaysiz — so'mda, dollarda yoki yulduzchada.\n\n2️⃣ <b>Havolangizni ulashing.</b> Sizga yozmoqchi bo'lgan odam shu havola orqali kiradi.\n\n3️⃣ <b>U to'laydi — siz olasiz.</b> Pul avtomatik balansingizga tushadi.\n\n4️⃣ <b>Pulni yeching.</b> Karta, Payme, Click yoki USDT orqali.\n\n💡 Telegram Premium egalari uchun bepul qilib qo'yish, do'stlarni istisnoga kiritish, tungi vaqtga boshqa narx belgilash — hammasi mumkin."
   },
   "menu": {
-    "title": "🏠 <b>Asosiy menyu</b>\n\n💰 Balans: <b>{balance}</b>\n🔗 Havolangiz: {link}",
+    "title": "🏠 <b>Asosiy menyu</b>\n\n💰 Balans: <b>{balance}</b>",
     "wallet": "💰 Hamyon",
     "inbox": "📥 Xabarlar sozlamasi",
     "link": "🔗 Mening havolam",

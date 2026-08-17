@@ -55,7 +55,7 @@
     "how_it_works": "ℹ️ <b>How it works</b>\n\n1️⃣ <b>Set your price.</b> You decide what it costs to message you — in sum, dollars or stars.\n\n2️⃣ <b>Share your link.</b> Anyone who wants to reach you goes through it.\n\n3️⃣ <b>They pay, you earn.</b> The money lands in your balance automatically.\n\n4️⃣ <b>Withdraw.</b> Card, Payme, Click or USDT.\n\n💡 Free for Telegram Premium users, exceptions for friends, a different price at night — all configurable."
   },
   "menu": {
-    "title": "🏠 <b>Main menu</b>\n\n💰 Balance: <b>{balance}</b>\n🔗 Your link: {link}",
+    "title": "🏠 <b>Main menu</b>\n\n💰 Balance: <b>{balance}</b>",
     "wallet": "💰 Wallet",
     "inbox": "📥 Message settings",
     "link": "🔗 My link",
