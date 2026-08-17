@@ -63,7 +63,7 @@ UNLOCKED_PERMISSIONS = ChatPermissions(
 
 @router.message(Command("yopish", "lock"), F.chat.type.in_({"group", "supergroup"}))
 async def cmd_lock_group(message: Message, bot: Bot, session: AsyncSession) -> None:
-    """Guruhda yozishni to'liq qulflash (faqat to'lov qilganlar yoza oladi)."""
+    """Guruhda yozishni pullik qilish (faqat to'lov qilganlar yoza oladi)."""
     user_id = message.from_user.id if message.from_user else 0
     member = await bot.get_chat_member(message.chat.id, user_id)
     if member.status not in (ChatMemberStatus.CREATOR, ChatMemberStatus.ADMINISTRATOR):
@@ -75,12 +75,16 @@ async def cmd_lock_group(message: Message, bot: Bot, session: AsyncSession) -> N
     chat_row.mode = ChatMode.PAID
     await session.commit()
 
+    # Chat default permissions'ni standart ochiq saqlaymiz (shunda to'laganlar mustaqil yoza oladi)
     try:
-        await bot.set_chat_permissions(message.chat.id, permissions=LOCKED_PERMISSIONS)
+        await bot.set_chat_permissions(message.chat.id, permissions=UNLOCKED_PERMISSIONS)
     except Exception as e:
-        logger.warning("Guruhni qulflashda xato: %s", e)
+        logger.warning("Guruh permissions sozlashda xato: %s", e)
 
-    price_sum = int(chat_row.price_mxtr / 1000 * 170) if chat_row.price_mxtr else 10000
+    price_sum = int(chat_row.price_mxtr / 1000 * 170) if chat_row.price_mxtr else 5000
+    if price_sum < 1000:
+        price_sum = 5000
+
     markup = InlineKeyboardMarkup(
         inline_keyboard=[
             [
@@ -95,10 +99,10 @@ async def cmd_lock_group(message: Message, bot: Bot, session: AsyncSession) -> N
     )
 
     await message.answer(
-        f"🔒 <b>Guruhda yozish yopildi (Pullik rejim yoqildi)!</b>\n\n"
-        f"Guruh a'zolari faqat to'lov qilgandan so'ng yoza olishadi.\n"
+        f"🔒 <b>Guruhda yozish pullik qilindi!</b>\n\n"
+        f"Guruh a'zolari faqat to'lov qilgandan so'ng yoza olishadi. To'lanmagan xabarlar avtomatik o'chiriladi.\n"
         f"💰 Tarif: <b>{price_sum:,.0f} so'm</b> / 30 kun\n\n"
-        f"Guruhda yozish ruxsatini olish uchun quyidagi tugmani bosing:",
+        f"Guruhda erkin yozish uchun quyidagi tugma orqali ruxsat oling:",
         reply_markup=markup,
         parse_mode="HTML",
     )
@@ -128,7 +132,7 @@ async def cmd_unlock_group(message: Message, bot: Bot, session: AsyncSession) ->
 
 @router.chat_member(ChatMemberUpdatedFilter(member_status_changed=JOIN_TRANSITION))
 async def on_user_joined_group(event: ChatMemberUpdated, bot: Bot, session: AsyncSession) -> None:
-    """Yangi a'zo guruhga kirganda guruh pullik bo'lsa uni MUTE qilish."""
+    """Yangi a'zo guruhga kirganda guruh pullik bo'lsa uni tekshirish."""
     chat_id = event.chat.id
     user_id = event.from_user.id
 
@@ -139,19 +143,10 @@ async def on_user_joined_group(event: ChatMemberUpdated, bot: Bot, session: Asyn
     if not chat_row or not chat_row.enabled or chat_row.mode != ChatMode.PAID:
         return
 
-    try:
-        await bot.restrict_chat_member(
-            chat_id=chat_id,
-            user_id=user_id,
-            permissions=LOCKED_PERMISSIONS,
-        )
-    except Exception as e:
-        logger.warning("Guruh a'zosini cheklashda xatolik: %s", e)
-
 
 @router.message(F.chat.type.in_({"group", "supergroup"}))
 async def check_group_message(message: Message, bot: Bot, session: AsyncSession) -> None:
-    """Guruhda yuborilgan xabarlarni tekshirish va to'lovsiz bo'lsa o'chirish."""
+    """Guruhda yuborilgan xabarlarni tekshirish va to'lovsiz bo'lsa darhol o'chirish."""
     chat_id = message.chat.id
     user_id = message.from_user.id if message.from_user else 0
 
@@ -189,20 +184,19 @@ async def check_group_message(message: Message, bot: Bot, session: AsyncSession)
     )
     perm = (await session.execute(stmt)).scalar_one_or_none()
     if perm:
-        # Ruxsat mavjud
+        # Ruxsat mavjud! Bemalol yozadi.
         return
 
-    # To'lov qilinmagan xabarni o'chirish va a'zoni cheklash
+    # To'lov qilinmagan xabarni darhol o'chirish
     try:
         await message.delete()
-        await bot.restrict_chat_member(chat_id, user_id, permissions=LOCKED_PERMISSIONS)
     except Exception as e:
         logger.debug("Guruh xabarini o'chirib bo'lmadi: %s", e)
 
     # To'lov havolasini yaratish
-    price_sum = int(chat_row.price_mxtr / 1000 * 170) if chat_row.price_mxtr else 10000
+    price_sum = int(chat_row.price_mxtr / 1000 * 170) if chat_row.price_mxtr else 5000
     if price_sum < 1000:
-        price_sum = 10000
+        price_sum = 5000
 
     order = await create_payment_order(
         session,
@@ -221,8 +215,10 @@ async def check_group_message(message: Message, bot: Bot, session: AsyncSession)
     markup = InlineKeyboardMarkup(
         inline_keyboard=[
             [
-                InlineKeyboardButton(text="🔹 Click orqali to'lash", url=click_url),
-                InlineKeyboardButton(text="🟢 Payme orqali to'lash", url=payme_url),
+                InlineKeyboardButton(
+                    text=f"💳 Yozish huquqini sotib olish ({price_sum:,.0f} so'm)",
+                    url=f"https://t.me/{settings.bot_username}?start=paygroup_{chat_id}",
+                )
             ]
         ]
     )
@@ -231,7 +227,8 @@ async def check_group_message(message: Message, bot: Bot, session: AsyncSession)
         await message.answer(
             f"⚠️ {message.from_user.mention_html()}, bu guruhda yozish <b>pullik</b>.\n\n"
             f"💰 Tarif: <b>{price_sum:,.0f} so'm</b> / 30 kun\n"
-            f"Yozish huquqini ochish uchun to'lovni bajaring:",
+            f"To'lov qilmasdan yozilgan xabarlar avtomatik o'chiriladi.\n"
+            f"Yozish huquqini olish uchun quyidagi tugmani bosing:",
             reply_markup=markup,
             parse_mode="HTML",
         )
