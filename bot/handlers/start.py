@@ -392,10 +392,25 @@ async def process_pay_from_balance(
 
     # Balansdan pul yechish va guruh egasiga o'tkazish
     try:
+        from bot.db.enums import TxKind
+        await wallet.debit(
+            session,
+            user_id=user.id,
+            amount_mxtr=price_mxtr,
+            kind=TxKind.CHAT_SPEND,
+            chat_id=target_chat_id,
+            note=f"Group access: {chat_row.title or target_chat_id}",
+        )
         if chat_row.owner_id and chat_row.owner_id != user.id:
-            await wallet.transfer(session, sender_id=user.id, recipient_id=chat_row.owner_id, amount_mxtr=price_mxtr)
-        else:
-            await wallet.debit(session, user_id=user.id, amount_mxtr=price_mxtr, reason="group_chat_access")
+            await wallet.credit(
+                session,
+                user_id=chat_row.owner_id,
+                amount_mxtr=price_mxtr,
+                kind=TxKind.CHAT_EARN,
+                chat_id=target_chat_id,
+                counterparty_id=user.id,
+                note=f"Group member access: {user.id}",
+            )
     except Exception as e:
         logger.error("Balansdan yechishda xatolik: %s", e)
 

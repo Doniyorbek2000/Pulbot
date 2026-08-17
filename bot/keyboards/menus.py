@@ -29,7 +29,7 @@ def main_menu(_: Translator, *, is_admin: bool = False) -> InlineKeyboardMarkup:
     from aiogram.types import WebAppInfo
 
     builder = InlineKeyboardBuilder()
-    if settings.webapp_base_url:
+    if settings.webapp_base_url and settings.webapp_base_url.startswith("https://"):
         builder.button(
             text="📱 Mini App Dashboard",
             web_app=WebAppInfo(url=f"{settings.webapp_base_url.rstrip('/')}/app"),
