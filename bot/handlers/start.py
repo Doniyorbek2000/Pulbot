@@ -42,7 +42,8 @@ async def start_with_payload(
     payload = (command.args or "").strip()
 
     if payload.startswith("pay_"):
-        from bot.services.payments.orders import get_click_url, get_payme_url
+        from bot.services.payments.orders import get_click_url, get_payme_url, create_cryptobot_invoice
+        from bot.services import wallet
         from bot.db.models import PaymentOrder
         from sqlalchemy import select
         from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
@@ -53,19 +54,45 @@ async def start_with_payload(
             await message.answer("❌ To'lov buyurtmasi topilmadi yoki muddati o'tgan.")
             return
 
-        click_url = get_click_url(order.id, int(order.amount))
-        payme_url = get_payme_url(order.id, int(order.amount * 100))
-        markup = InlineKeyboardMarkup(
-            inline_keyboard=[
-                [InlineKeyboardButton(text="🔹 Click orqali to'lash", url=click_url)],
-                [InlineKeyboardButton(text="🟢 Payme orqali to'lash", url=payme_url)],
-            ]
-        )
+        price_sum = int(order.amount)
+        price_mxtr = int(price_sum / 170 * 1000)
+        _total, available_mxtr = await wallet.balance(session, user.id)
+        available_sum = int(available_mxtr / 1000 * 170)
+
+        click_url = get_click_url(order.id, price_sum)
+        payme_url = get_payme_url(order.id, price_sum * 100)
+        crypto_url = await create_cryptobot_invoice(order.id, round(price_sum / 12800, 2))
+
+        buttons = []
+        if available_mxtr >= price_mxtr:
+            buttons.append([
+                InlineKeyboardButton(
+                    text=f"✅ Balansdan to'lash ({price_sum:,.0f} so'm)",
+                    callback_data=f"paybal:order:{order.id}"
+                )
+            ])
+        else:
+            buttons.append([
+                InlineKeyboardButton(
+                    text=f"💳 Balansni to'ldirish (Hozir: {available_sum:,.0f} so'm)",
+                    callback_data="wallet:topup"
+                )
+            ])
+
+        buttons.append([
+            InlineKeyboardButton(text="🔹 Click orqali to'lash", url=click_url),
+            InlineKeyboardButton(text="🟢 Payme orqali to'lash", url=payme_url),
+        ])
+        if crypto_url:
+            buttons.append([InlineKeyboardButton(text="💎 USDT / TON (@CryptoBot)", url=crypto_url)])
+
+        markup = InlineKeyboardMarkup(inline_keyboard=buttons)
         await message.answer(
-            f"💳 <b>To'lov buyurtmasi #{order.id[:8]}</b>\n\n"
-            f"Summa: <b>{order.amount:,.0f} {order.currency}</b>\n"
-            f"Maqsad: <b>{order.target_type.upper()}</b>\n\n"
-            f"To'lovni amalga oshirish uchun quyidagi tugmalardan birini tanlang:",
+            f"🔒 <b>Pullik Muloqot To'lovi</b>\n\n"
+            f"💰 Narxi: <b>{price_sum:,.0f} so'm</b>\n"
+            f"⏱ Ruxsat muddati: <b>24 soat</b>\n"
+            f"💵 Sizning balansingiz: <b>{available_sum:,.0f} so'm</b>\n\n"
+            f"To'lov usulini tanlang 👇",
             reply_markup=markup,
             parse_mode="HTML",
         )
@@ -455,6 +482,39 @@ async def process_pay_from_balance(
         f"Guruhga o'tib bemalol yozishingiz mumkin! 🚀",
         None,
     )
+
+
+@router.callback_query(F.data.startswith("paybal:order:"))
+async def process_pay_order_from_balance(
+    query: CallbackQuery,
+    session: AsyncSession,
+    user: User,
+    _: Translator,
+    fmt,
+) -> None:
+    from bot.services import fulfillment
+    from bot.db.models import PaymentOrder
+    from sqlalchemy import select
+
+    order_id = query.data.split(":")[-1]
+    order = (await session.execute(select(PaymentOrder).where(PaymentOrder.id == order_id))).scalar_one_or_none()
+    if not order:
+        await query.answer("❌ Buyurtma topilmadi", show_alert=True)
+        return
+
+    # To'liq bajarish
+    success = await fulfillment.fulfill_order(query.bot, session, order)
+    if success:
+        await query.answer("✅ To'lov muvaffaqiyatli amalga oshirildi!", show_alert=True)
+        await safe_edit(
+            query,
+            f"🎉 <b>To'lov muvaffaqiyatli amalga oshirildi!</b>\n\n"
+            f"✅ 24 soatlik erkin muloqot huquqi faollashtirildi.\n"
+            f"Shaxsiy chatga o'tib bemalol yozishingiz mumkin! 🚀",
+            None,
+        )
+    else:
+        await query.answer("❌ To'lovni amalga oshirishda xatolik yuz berdi", show_alert=True)
 
 
 @router.callback_query(MenuCB.filter(F.action == "noop"))
