@@ -71,27 +71,40 @@ async def start_with_payload(
         )
         return
 
-    if payload.startswith("paygroup_"):
+    # Guruh to'lovi yoki sozlamalari
+    if payload.startswith("paygroup_") or (payload.startswith("g_") and payload[2:].lstrip("-").isdigit()) or (payload.startswith("chat_") and payload[5:].lstrip("-").isdigit()):
         from bot.services.payments.orders import get_click_url, get_payme_url, create_cryptobot_invoice, create_payment_order
-        from bot.db.models import ChatSettings, PaymentOrder
+        from bot.db.models import ChatSettings
         from bot.db.enums import TargetType
+        from bot.services import wallet
         from sqlalchemy import select
         from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-        chat_id_str = payload[9:]
+        chat_id_raw = payload.split("_", 1)[1]
         try:
-            target_chat_id = int(chat_id_str)
+            target_chat_id = int(chat_id_raw)
         except ValueError:
             target_chat_id = 0
 
         chat_row = (await session.execute(select(ChatSettings).where(ChatSettings.chat_id == target_chat_id))).scalar_one_or_none()
+        
+        # Agar foydalanuvchi guruh egasi bo'lsa va sozlash uchun kirgan bo'lsa
+        if chat_row and chat_row.owner_id == user.id and not payload.startswith("paygroup_"):
+            from bot.handlers.groups import open_group_card
+            await open_group_card(message, session, user, _, fmt, target_chat_id, edit=False)
+            return
+
         if not chat_row:
             await message.answer("❌ Guruh topilmadi yoki bot admin emas.")
             return
 
-        price_sum = int(chat_row.price_mxtr / 1000 * 170) if chat_row.price_mxtr else 10000
+        price_mxtr = chat_row.price_mxtr or 29412
+        price_sum = int(price_mxtr / 1000 * 170)
         if price_sum < 1000:
-            price_sum = 10000
+            price_sum = 5000
+
+        _total, available_mxtr = await wallet.balance(session, user.id)
+        available_sum = int(available_mxtr / 1000 * 170)
 
         order = await create_payment_order(
             session,
@@ -108,30 +121,39 @@ async def start_with_payload(
         payme_url = get_payme_url(order.id, price_sum * 100)
         crypto_url = await create_cryptobot_invoice(order.id, round(price_sum / 12800, 2))
 
-        buttons = [
-            [
-                InlineKeyboardButton(text="🔹 Click orqali to'lash", url=click_url),
-                InlineKeyboardButton(text="🟢 Payme orqali to'lash", url=payme_url),
-            ]
-        ]
+        buttons = []
+        if available_mxtr >= price_mxtr:
+            buttons.append([
+                InlineKeyboardButton(
+                    text=f"✅ Balansdan to'lash ({price_sum:,.0f} so'm)",
+                    callback_data=f"paybal:group:{target_chat_id}"
+                )
+            ])
+        else:
+            buttons.append([
+                InlineKeyboardButton(
+                    text=f"💳 Balansni to'ldirish (Hozir: {available_sum:,.0f} so'm)",
+                    callback_data="wallet:topup"
+                )
+            ])
+
+        buttons.append([
+            InlineKeyboardButton(text="🔹 Click orqali to'lash", url=click_url),
+            InlineKeyboardButton(text="🟢 Payme orqali to'lash", url=payme_url),
+        ])
         if crypto_url:
             buttons.append([InlineKeyboardButton(text="💎 USDT / TON (@CryptoBot)", url=crypto_url)])
 
         markup = InlineKeyboardMarkup(inline_keyboard=buttons)
         await message.answer(
-            f"💳 <b>Guruhda yozish huquqi: {chat_row.title}</b>\n\n"
-            f"💰 Tarif: <b>{price_sum:,.0f} so'm</b> / 30 kun\n\n"
-            f"To'lovni amalga oshirishingiz bilan ushbu guruhdagi yozish joyingiz (input bar) avtomatik tarzda ochiladi!\n"
-            f"To'lov turini tanlang:",
+            f"🔒 <b>Guruhda yozish huquqi: {chat_row.title}</b>\n\n"
+            f"💰 Tarif: <b>{price_sum:,.0f} so'm</b> / 30 kun\n"
+            f"💵 Sizning balansingiz: <b>{available_sum:,.0f} so'm</b>\n\n"
+            f"To'lovni amalga oshirishingiz bilan ushbu guruhdagi yozish joyingiz (input bar) avtomatik ochiladi!\n"
+            f"To'lov usulini tanlang 👇",
             reply_markup=markup,
             parse_mode="HTML",
         )
-        return
-
-    if payload.startswith("chat_") and payload[5:].lstrip("-").isdigit():
-        from bot.handlers.groups import open_group_card
-
-        await open_group_card(message, session, user, _, fmt, int(payload[5:]), edit=False)
         return
 
     if payload.startswith("u_"):
@@ -149,12 +171,6 @@ async def start_with_payload(
         from bot.handlers.wallet import show_topup
 
         await show_topup(message, session, user, _, fmt, edit=False)
-        return
-
-    if payload.startswith("g_") and payload[2:].lstrip("-").isdigit():
-        from bot.handlers.groups import open_group_card
-
-        await open_group_card(message, session, user, _, fmt, int(payload[2:]), edit=False)
         return
 
     await greet(message, session, user, _, fmt)
@@ -338,6 +354,95 @@ def _help_keyboard(_: Translator):
     return builder.as_markup()
 
 
+@router.callback_query(F.data.startswith("paybal:group:"))
+async def process_pay_from_balance(
+    query: CallbackQuery,
+    session: AsyncSession,
+    user: User,
+    _: Translator,
+    fmt,
+) -> None:
+    from datetime import timedelta
+    from aiogram.types import ChatPermissions
+    from bot.db.models import ActivePermission, ChatSettings
+    from bot.db.enums import TargetType
+    from bot.services import wallet, chats
+    from bot.utils.timeutils import utcnow
+    from sqlalchemy import select
+
+    chat_id_str = query.data.split(":")[-1]
+    try:
+        target_chat_id = int(chat_id_str)
+    except ValueError:
+        await query.answer("Xatolik yuz berdi", show_alert=True)
+        return
+
+    chat_row = (await session.execute(select(ChatSettings).where(ChatSettings.chat_id == target_chat_id))).scalar_one_or_none()
+    if not chat_row:
+        await query.answer("Guruh topilmadi", show_alert=True)
+        return
+
+    price_mxtr = chat_row.price_mxtr or 29412
+    price_sum = int(price_mxtr / 1000 * 170)
+
+    _total, available_mxtr = await wallet.balance(session, user.id)
+    if available_mxtr < price_mxtr:
+        await query.answer("Balansingizda mablag' yetarli emas!", show_alert=True)
+        return
+
+    # Balansdan pul yechish va guruh egasiga o'tkazish
+    try:
+        if chat_row.owner_id and chat_row.owner_id != user.id:
+            await wallet.transfer(session, sender_id=user.id, recipient_id=chat_row.owner_id, amount_mxtr=price_mxtr)
+        else:
+            await wallet.debit(session, user_id=user.id, amount_mxtr=price_mxtr, reason="group_chat_access")
+    except Exception as e:
+        logger.error("Balansdan yechishda xatolik: %s", e)
+
+    # Guruhda a'zoga ruxsatnomani ochish
+    try:
+        await query.bot.restrict_chat_member(
+            chat_id=target_chat_id,
+            user_id=user.id,
+            permissions=ChatPermissions(
+                can_send_messages=True,
+                can_send_audios=True,
+                can_send_documents=True,
+                can_send_photos=True,
+                can_send_videos=True,
+                can_send_video_notes=True,
+                can_send_voice_notes=True,
+                can_send_polls=True,
+                can_send_other_messages=True,
+                can_add_web_page_previews=True,
+            ),
+        )
+    except Exception as e:
+        logger.warning("Guruh a'zosini ochishda xatolik: %s", e)
+
+    # ActivePermission yozish
+    now = utcnow()
+    perm = ActivePermission(
+        target_type=TargetType.GROUP_CHAT,
+        target_id=str(target_chat_id),
+        owner_id=target_chat_id,
+        user_id=user.id,
+        expires_at=now + timedelta(days=30),
+    )
+    session.add(perm)
+    await session.commit()
+
+    await query.answer("✅ To'lov muvaffaqiyatli amalga oshirildi!", show_alert=True)
+    await safe_edit(
+        query,
+        f"🎉 <b>To'lov muvaffaqiyatli amalga oshirildi!</b>\n\n"
+        f"✅ <b>{chat_row.title}</b> guruhida <b>30 kunlik yozish huquqi</b> faollashtirildi.\n\n"
+        f"Guruhga o'tib bemalol yozishingiz mumkin! 🚀",
+        None,
+    )
+
+
 @router.callback_query(MenuCB.filter(F.action == "noop"))
 async def noop(query: CallbackQuery) -> None:
     await query.answer()
+
