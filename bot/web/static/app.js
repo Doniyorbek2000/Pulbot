@@ -67,6 +67,11 @@ async function loadDashboard() {
       document.getElementById("dm-pricing-unit").value = data.dm_settings.pricing_unit;
       onPricingUnitChange(data.dm_settings.pricing_unit);
     }
+    if (data.dm_settings.target_policy) {
+      document.getElementById("dm-target-policy").value = data.dm_settings.target_policy;
+    }
+    document.getElementById("dm-free-premium").checked = !!data.dm_settings.free_for_premium;
+    document.getElementById("dm-free-first").checked = !!data.dm_settings.free_first_message;
   } catch (err) {
     console.error(err);
   }
@@ -97,6 +102,9 @@ function syncPrice(val, fromSlider = true) {
 // Save DM Settings
 async function saveDMSettings() {
   const enabled = document.getElementById("dm-toggle").checked;
+  const target_policy = document.getElementById("dm-target-policy").value || "exclude_contacts";
+  const free_for_premium = document.getElementById("dm-free-premium").checked;
+  const free_first_message = document.getElementById("dm-free-first").checked;
   const pricing_unit = document.getElementById("dm-pricing-unit").value || "session";
   const price_sum = parseInt(document.getElementById("dm-price-input").value, 10) || 10000;
   let session_hours = parseInt(document.getElementById("dm-duration-input").value, 10) || 24;
@@ -107,7 +115,16 @@ async function saveDMSettings() {
     const res = await fetch("/api/settings/dm", {
       method: "POST",
       headers,
-      body: JSON.stringify({ enabled, pricing_unit, price_sum, session_hours, welcome_text }),
+      body: JSON.stringify({
+        enabled,
+        target_policy,
+        free_for_premium,
+        free_first_message,
+        pricing_unit,
+        price_sum,
+        session_hours,
+        welcome_text,
+      }),
     });
     const result = await res.json();
     if (res.ok && result.ok) {

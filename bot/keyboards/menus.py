@@ -36,14 +36,13 @@ def main_menu(_: Translator, *, is_admin: bool = False) -> InlineKeyboardMarkup:
         )
     builder.button(text=_("menu.wallet"), callback_data=MenuCB(action="wallet"))
     builder.button(text=_("menu.inbox"), callback_data=MenuCB(action="inbox"))
-    builder.button(text=_("menu.link"), callback_data=MenuCB(action="link"))
     builder.button(text=_("menu.groups"), callback_data=MenuCB(action="groups"))
     builder.button(text=_("menu.withdraw"), callback_data=MenuCB(action="withdraw"))
     builder.button(text=_("menu.settings"), callback_data=MenuCB(action="settings"))
     builder.button(text=_("menu.help"), callback_data=MenuCB(action="help"))
     if is_admin:
         builder.button(text=_("menu.admin"), callback_data=MenuCB(action="admin"))
-    builder.adjust(1, 2, 2, 2, 1)
+    builder.adjust(1, 2, 2, 2)
     return builder.as_markup()
 
 

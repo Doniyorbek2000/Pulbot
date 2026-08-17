@@ -68,6 +68,30 @@
         </div>
 
         <div class="form-group">
+          <label class="form-label">Kimlar to'lashi kerak?</label>
+          <select class="form-input" id="dm-target-policy">
+            <option value="exclude_contacts" selected>👥 Faqat notanishlar (Kontaktdagilar bepul)</option>
+            <option value="all_users">🌍 Hamma (Kontaktlar va notanishlar)</option>
+          </select>
+        </div>
+
+        <div class="toggle-row" style="margin-bottom: 12px;">
+          <span>🌟 Telegram Premium egalariga bepul</span>
+          <label class="switch">
+            <input type="checkbox" id="dm-free-premium" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="toggle-row" style="margin-bottom: 12px;">
+          <span>🎁 1-tanishuv xabari bepul</span>
+          <label class="switch">
+            <input type="checkbox" id="dm-free-first" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="form-group">
           <label class="form-label">Hisoblash usuli (Tarif turi)</label>
           <select class="form-input" id="dm-pricing-unit" onchange="onPricingUnitChange(this.value)">
             <option value="per_message">✉️ Bir martalik (Har bir xabar uchun)</option>

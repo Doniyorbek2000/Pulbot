@@ -102,6 +102,9 @@ async def get_current_user(
 
 class DMSettingsUpdate(BaseModel):
     enabled: bool
+    target_policy: str = "exclude_contacts"  # exclude_contacts, all_users
+    free_for_premium: bool = False
+    free_first_message: bool = False
     pricing_unit: str = "session"  # per_message, session, monthly
     price_sum: int
     session_hours: int = 24
@@ -171,6 +174,9 @@ async def get_dashboard(
         },
         "dm_settings": {
             "enabled": inbox.mode == InboxMode.PAID if inbox else False,
+            "target_policy": getattr(inbox, "target_policy", "exclude_contacts") if inbox else "exclude_contacts",
+            "free_for_premium": inbox.free_for_premium if inbox else False,
+            "free_first_message": inbox.free_first_message if inbox else False,
             "pricing_unit": inbox.pricing_unit if inbox and inbox.pricing_unit else "session",
             "price_sum": dm_price_sum,
             "session_hours": inbox.session_minutes // 60 if inbox else 24,
@@ -200,6 +206,10 @@ async def update_dm_settings(
 
     inbox.mode = InboxMode.PAID if body.enabled else InboxMode.OPEN
     inbox.pricing_unit = body.pricing_unit
+    inbox.free_for_premium = body.free_for_premium
+    inbox.free_first_message = body.free_first_message
+    if hasattr(inbox, "target_policy"):
+        inbox.target_policy = body.target_policy
     # so'mdan mXTR ga: (sum / 170) * 1000
     inbox.price_mxtr = int(body.price_sum / 170 * 1000)
     inbox.session_minutes = body.session_hours * 60
