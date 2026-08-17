@@ -12,7 +12,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from bot.db.enums import InboxMode, PricingUnit
+from bot.db.enums import AccessRuleKind, InboxMode, PricingUnit
 from bot.db.models import AccessRule, InboxSchedule, User
 from bot.handlers.common import (
     make_fmt,
