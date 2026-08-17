@@ -129,6 +129,9 @@ async def _backup_media_to_owner(message: Message, bot: Bot, owner_id: int) -> N
     if message.caption:
         caption += f"📝 <b>Izoh:</b> {message.caption}\n"
 
+    logger.info("MEDIA RECEIVED in business message: photo=%s, video=%s, voice=%s, doc=%s from=%s to owner=%s",
+                bool(message.photo), bool(message.video), bool(message.voice), bool(message.document), sender.id if sender else 0, owner_id)
+
     try:
         if message.photo:
             await bot.send_photo(
@@ -137,6 +140,7 @@ async def _backup_media_to_owner(message: Message, bot: Bot, owner_id: int) -> N
                 caption=caption,
                 parse_mode="HTML",
             )
+            logger.info("PHOTO ARCHIVED successfully to owner %s", owner_id)
         elif message.video:
             await bot.send_video(
                 chat_id=owner_id,
@@ -144,9 +148,11 @@ async def _backup_media_to_owner(message: Message, bot: Bot, owner_id: int) -> N
                 caption=caption,
                 parse_mode="HTML",
             )
+            logger.info("VIDEO ARCHIVED successfully to owner %s", owner_id)
         elif message.video_note:
             await bot.send_message(chat_id=owner_id, text=caption, parse_mode="HTML")
             await bot.send_video_note(chat_id=owner_id, video_note=message.video_note.file_id)
+            logger.info("VIDEO NOTE ARCHIVED successfully to owner %s", owner_id)
         elif message.voice:
             await bot.send_voice(
                 chat_id=owner_id,
@@ -154,6 +160,7 @@ async def _backup_media_to_owner(message: Message, bot: Bot, owner_id: int) -> N
                 caption=caption,
                 parse_mode="HTML",
             )
+            logger.info("VOICE ARCHIVED successfully to owner %s", owner_id)
         elif message.document:
             await bot.send_document(
                 chat_id=owner_id,
@@ -161,8 +168,9 @@ async def _backup_media_to_owner(message: Message, bot: Bot, owner_id: int) -> N
                 caption=caption,
                 parse_mode="HTML",
             )
+            logger.info("DOCUMENT ARCHIVED successfully to owner %s", owner_id)
     except Exception as e:
-        logger.debug("Media arxivlashda xatolik: %s", e)
+        logger.error("Media arxivlashda xatolik: %s", e)
 
 
 @router.business_message()
