@@ -71,6 +71,63 @@ async def start_with_payload(
         )
         return
 
+    if payload.startswith("paygroup_"):
+        from bot.services.payments.orders import get_click_url, get_payme_url, create_cryptobot_invoice, create_payment_order
+        from bot.db.models import ChatSettings, PaymentOrder
+        from bot.db.enums import TargetType
+        from sqlalchemy import select
+        from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+        chat_id_str = payload[9:]
+        try:
+            target_chat_id = int(chat_id_str)
+        except ValueError:
+            target_chat_id = 0
+
+        chat_row = (await session.execute(select(ChatSettings).where(ChatSettings.chat_id == target_chat_id))).scalar_one_or_none()
+        if not chat_row:
+            await message.answer("❌ Guruh topilmadi yoki bot admin emas.")
+            return
+
+        price_sum = int(chat_row.price_mxtr / 1000 * 170) if chat_row.price_mxtr else 10000
+        if price_sum < 1000:
+            price_sum = 10000
+
+        order = await create_payment_order(
+            session,
+            user_id=user.id,
+            recipient_id=chat_row.owner_id,
+            target_type=TargetType.GROUP_CHAT,
+            target_id=target_chat_id,
+            amount=price_sum,
+            currency="UZS",
+        )
+        await session.commit()
+
+        click_url = get_click_url(order.id, price_sum)
+        payme_url = get_payme_url(order.id, price_sum * 100)
+        crypto_url = await create_cryptobot_invoice(order.id, round(price_sum / 12800, 2))
+
+        buttons = [
+            [
+                InlineKeyboardButton(text="🔹 Click orqali to'lash", url=click_url),
+                InlineKeyboardButton(text="🟢 Payme orqali to'lash", url=payme_url),
+            ]
+        ]
+        if crypto_url:
+            buttons.append([InlineKeyboardButton(text="💎 USDT / TON (@CryptoBot)", url=crypto_url)])
+
+        markup = InlineKeyboardMarkup(inline_keyboard=buttons)
+        await message.answer(
+            f"💳 <b>Guruhda yozish huquqi: {chat_row.title}</b>\n\n"
+            f"💰 Tarif: <b>{price_sum:,.0f} so'm</b> / 30 kun\n\n"
+            f"To'lovni amalga oshirishingiz bilan ushbu guruhdagi yozish joyingiz (input bar) avtomatik tarzda ochiladi!\n"
+            f"To'lov turini tanlang:",
+            reply_markup=markup,
+            parse_mode="HTML",
+        )
+        return
+
     if payload.startswith("chat_") and payload[5:].lstrip("-").isdigit():
         from bot.handlers.groups import open_group_card
 

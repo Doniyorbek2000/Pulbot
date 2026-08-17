@@ -85,8 +85,8 @@ async def cmd_lock_group(message: Message, bot: Bot, session: AsyncSession) -> N
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="💳 Yozish huquqini sotib olish",
-                    url=f"https://t.me/{settings.bot_username}?start=chat_{abs(message.chat.id)}"
+                    text=f"💳 Yozish huquqini sotib olish ({price_sum:,.0f} so'm)",
+                    url=f"https://t.me/{settings.bot_username}?start=paygroup_{message.chat.id}"
                     if settings.bot_username
                     else "https://t.me",
                 )
