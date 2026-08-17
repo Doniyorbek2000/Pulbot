@@ -98,7 +98,11 @@ async def render_inbox(
     is_active = inbox.mode in (InboxMode.PAID, InboxMode.PREMIUM_OR_PAID)
     status_btn_text = "🔴 Shaxsiy chatni O'CHIRISH (Bepul qilish)" if is_active else "🟢 Shaxsiy chatni YOQISH (Pullik qilish)"
 
+    is_connected = bool(user.business_enabled and user.business_connection_id)
+    connect_btn_text = "🟢 Profilga ulangan (Telegram Business)" if is_connected else "🤖 Shaxsiy chatga ulash (Kodsiz / 1-klikda)"
+
     builder = InlineKeyboardBuilder()
+    builder.button(text=connect_btn_text, callback_data=InboxCB(action="connect_biz"))
     builder.button(text=status_btn_text, callback_data=InboxCB(action="toggle_pause"))
     builder.button(text="💵 Narxni belgilash", callback_data=InboxCB(action="price"))
     builder.button(text="⏱ Hisoblash usuli (Tarif)", callback_data=InboxCB(action="unit"))
@@ -107,13 +111,38 @@ async def render_inbox(
     builder.button(text="👥 Notanishlar / Kontaktdagilar", callback_data=InboxCB(action="mode"))
     builder.button(text="🧩 Bepul imtiyozlar (Premium/1-xabar)", callback_data=InboxCB(action="extra"))
     builder.button(text=_("common.back"), callback_data=MenuCB(action="home"))
-    builder.adjust(1, 2, 2, 1, 1, 1)
+    builder.adjust(1, 1, 2, 2, 1, 1, 1)
 
     if edit and isinstance(event, CallbackQuery):
         await safe_edit(event, text, builder.as_markup())
     else:
         message = event.message if isinstance(event, CallbackQuery) else event
         await message.answer(text, reply_markup=builder.as_markup())
+
+
+@router.callback_query(InboxCB.filter(F.action == "connect_biz"))
+async def connect_business_guide(
+    query: CallbackQuery, session: AsyncSession, user: User, _: Translator
+) -> None:
+    """Telegram Business orqali 1-klikda kodsiz ulanish oynasi."""
+    is_connected = bool(user.business_enabled and user.business_connection_id)
+    status_text = "🟢 <b>Holat: Profilingizga muvaffaqiyatli ulangan!</b>" if is_connected else "⚪️ <b>Holat: Hali ulanmagan</b>"
+
+    text = (
+        f"🤖 <b>Telegram Business orqali 1-klikda ulash</b>\n\n"
+        f"{status_text}\n\n"
+        f"Bu usulda hech qanday telefon raqam yoki SMS kod talab qilinmaydi! 100% rasmiy va xavfsiz.\n\n"
+        f"<b>Qanday ulanadi:</b>\n"
+        f"1️⃣ Telegram'da <b>Sozlamalar (Settings)</b>ga kiring.\n"
+        f"2️⃣ <b>Telegram Business</b> ➡️ <b>Chat-botlar (Chatbots)</b> bo'limiga kiring.\n"
+        f"3️⃣ Qidiruvga <b>@{settings.bot_username or 'dofauz_bot'}</b> deb yozing va <b>Ulash (Добавить)</b>ni bosing!\n\n"
+        f"✅ Shundan so'ng bot darhol profilingizni himoya qilishni boshlaydi!"
+    )
+    builder = InlineKeyboardBuilder()
+    builder.button(text="💼 Telegram Business ga o'tish", url="tg://settings/business")
+    builder.button(text=_("common.back"), callback_data=InboxCB(action="view"))
+    builder.adjust(1, 1)
+    await safe_edit(query, text, builder.as_markup())
 
 
 @router.callback_query(InboxCB.filter(F.action == "toggle_pause"))
