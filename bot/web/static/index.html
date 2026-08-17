@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>PulBot Monetizatsiya Paneli</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="container">
+    <!-- Header Balans Kartasi -->
+    <div class="header-card">
+      <div class="profile-info">
+        <div class="user-name" id="user-name">Yuklanmoqda...</div>
+        <div class="badge" id="biz-badge">Business rejim</div>
+      </div>
+      <div class="balance-title">Yechish mumkin bo'lgan balans</div>
+      <div class="balance-amount" id="balance-val">0 UZS</div>
+      <div class="quick-stats">
+        <div class="stat-item">
+          <div class="label">Jami ishlab topilgan</div>
+          <div class="val" id="earned-val">0 UZS</div>
+        </div>
+        <div class="stat-item">
+          <div class="label">Kafolatda (Hold)</div>
+          <div class="val" id="locked-val">0 UZS</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1. TAB: Dashboard -->
+    <div class="tab-content active" id="dashboard">
+      <div class="card">
+        <div class="card-title">📈 Asosiy Ko'rsatkichlar</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+          <div style="background: rgba(15,23,42,0.5); padding: 12px; border-radius: 12px;">
+            <div style="font-size: 11px; color: var(--hint-color);">Pullik Guruh/Kanallar</div>
+            <div style="font-size: 20px; font-weight: 700;" id="stat-chats">0</div>
+          </div>
+          <div style="background: rgba(15,23,42,0.5); padding: 12px; border-radius: 12px;">
+            <div style="font-size: 11px; color: var(--hint-color);">Faol Obunachilar</div>
+            <div style="font-size: 20px; font-weight: 700;" id="stat-subs">0</div>
+          </div>
+        </div>
+        <button class="btn" onclick="switchTab('withdraw')">💸 Pul Yechish</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">⚡ Tezkor Harakatlar</div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <button class="btn btn-secondary" onclick="switchTab('dm')">💬 Shaxsiy Chat Narxini Sozlash</button>
+          <button class="btn btn-secondary" onclick="switchTab('whitelist')">🛡️ Istisnolar (Oq Ro'yxat)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. TAB: Shaxsiy Chat (DM Paywall) -->
+    <div class="tab-content" id="dm">
+      <div class="card">
+        <div class="card-title">💬 Shaxsiy Chat (DM) Paywall</div>
+        <div class="toggle-row">
+          <span>Pullik muloqotni yoqish</span>
+          <label class="switch">
+            <input type="checkbox" id="dm-toggle" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Muloqot narxi (so'mda)</label>
+          <div class="range-wrap">
+            <input type="range" class="range-slider" id="dm-price-slider" min="1000" max="200000" step="1000" value="10000" oninput="syncPrice(this.value, true)" />
+            <input type="number" class="form-input" style="width: 120px;" id="dm-price-input" value="10000" oninput="syncPrice(this.value, false)" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Ruxsat muddati (soatda)</label>
+          <input type="number" class="form-input" id="dm-duration-input" value="24" min="1" max="720" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Salomlashish xabari (Paywall matni)</label>
+          <textarea class="form-input" id="dm-welcome-input" rows="3" placeholder="Salom! Men bilan bog'lanish pullik asosda tashkil etilgan..."></textarea>
+        </div>
+
+        <button class="btn" onclick="saveDMSettings()">💾 Sozlamalarni Saqlash</button>
+      </div>
+    </div>
+
+    <!-- 3. TAB: Guruh va Kanallar -->
+    <div class="tab-content" id="chats">
+      <div class="card">
+        <div class="card-title">👥 Pullik Guruh va Kanallar</div>
+        <p style="font-size: 13px; color: var(--hint-color); margin-bottom: 12px;">
+          Guruh va kanallaringizni pullik qilish uchun botni o'sha guruh/kanalga <b>Admin</b> qilib tayinlang.
+        </p>
+        <div id="chats-list">Yuklanmoqda...</div>
+      </div>
+    </div>
+
+    <!-- 4. TAB: Oq Ro'yxat (Whitelist) -->
+    <div class="tab-content" id="whitelist">
+      <div class="card">
+        <div class="card-title">🛡️ Oq Ro'yxat (Istisnolar)</div>
+        <p style="font-size: 13px; color: var(--hint-color); margin-bottom: 12px;">
+          Bu yerdagi foydalanuvchilar sizga mutlaqo <b>bepul</b> yoza oladi.
+        </p>
+        <button class="btn btn-secondary" style="margin-bottom: 14px;" onclick="addWhitelistUser()">➕ Yangi ID Qo'shish</button>
+        <div id="whitelist-container">Yuklanmoqda...</div>
+      </div>
+    </div>
+
+    <!-- 5. TAB: Pul Yechish -->
+    <div class="tab-content" id="withdraw">
+      <div class="card">
+        <div class="card-title">💸 Mablag'ni Yechib Olish</div>
+        <div class="form-group">
+          <label class="form-label">Yechish summasi (so'mda)</label>
+          <input type="number" class="form-input" id="withdraw-amount" placeholder="Masalan: 50000" min="10000" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Yechish usuli</label>
+          <select class="form-input" id="withdraw-method">
+            <option value="card_uzs">💳 Bank kartasi (Uzcard / Humo)</option>
+            <option value="payme">🟢 Payme hamyon</option>
+            <option value="click">🔹 Click hamyon</option>
+            <option value="usdt">💎 USDT (TRC-20 / TON)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Karta / Hamyon / Manzil</label>
+          <input type="text" class="form-input" id="withdraw-dest" placeholder="8600... yoki +99890... yoki USDT manzil" />
+        </div>
+        <button class="btn" onclick="submitWithdraw()">📤 Yechishga Buyurtma Berish</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <nav class="nav-bar">
+    <div class="nav-item active" id="nav-dashboard" onclick="switchTab('dashboard')">
+      <span class="nav-icon">📊</span>
+      <span>Asosiy</span>
+    </div>
+    <div class="nav-item" id="nav-dm" onclick="switchTab('dm')">
+      <span class="nav-icon">💬</span>
+      <span>Shaxsiy</span>
+    </div>
+    <div class="nav-item" id="nav-chats" onclick="switchTab('chats')">
+      <span class="nav-icon">👥</span>
+      <span>Guruhlar</span>
+    </div>
+    <div class="nav-item" id="nav-whitelist" onclick="switchTab('whitelist')">
+      <span class="nav-icon">🛡️</span>
+      <span>Oq ro'yxat</span>
+    </div>
+    <div class="nav-item" id="nav-withdraw" onclick="switchTab('withdraw')">
+      <span class="nav-icon">💸</span>
+      <span>Yechish</span>
+    </div>
+  </nav>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

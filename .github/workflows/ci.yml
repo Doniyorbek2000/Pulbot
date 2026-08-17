@@ -1,0 +1,51 @@
+name: Testlar
+
+on:
+  push:
+    branches-ignore: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Bog'liqliklarni o'rnatish
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio ruff
+
+      - name: Lint
+        run: ruff check bot tests --select F,E9
+
+      - name: Testlar
+        run: python -m pytest -q
+
+      - name: Til fayllari to'liqligini tekshirish
+        run: |
+          python - <<'PY'
+          import json, pathlib, sys
+          def flat(d, p=""):
+              out = set()
+              for k, v in d.items():
+                  key = f"{p}.{k}" if p else k
+                  out |= flat(v, key) if isinstance(v, dict) else {key}
+              return out
+          locs = {p.stem: flat(json.loads(p.read_text(encoding="utf-8")))
+                  for p in pathlib.Path("bot/locales").glob("*.json")}
+          base = locs["uz"]
+          bad = False
+          for lang, keys in sorted(locs.items()):
+              diff = base ^ keys
+              if diff:
+                  print(f"{lang}: mos kelmagan kalitlar -> {sorted(diff)}")
+                  bad = True
+          print(f"Jami {len(base)} ta kalit, {len(locs)} ta til")
+          sys.exit(1 if bad else 0)
+          PY
