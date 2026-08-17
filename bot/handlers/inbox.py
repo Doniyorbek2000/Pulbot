@@ -96,7 +96,7 @@ async def render_inbox(
     )
 
     is_active = inbox.mode in (InboxMode.PAID, InboxMode.PREMIUM_OR_PAID)
-    status_btn_text = "⏸ Botni to'xtatish (Vaqtincha o'chirish)" if is_active else "▶️ Botni yoqish (Pullik rejim)"
+    status_btn_text = "🔴 Shaxsiy chatni O'CHIRISH (Bepul qilish)" if is_active else "🟢 Shaxsiy chatni YOQISH (Pullik qilish)"
 
     builder = InlineKeyboardBuilder()
     builder.button(text=status_btn_text, callback_data=InboxCB(action="toggle_pause"))
@@ -120,16 +120,16 @@ async def render_inbox(
 async def toggle_pause(
     query: CallbackQuery, session: AsyncSession, user: User, _: Translator
 ) -> None:
-    """Botni vaqtincha to'xtatish yoki qayta yoqish."""
+    """Shaxsiy chat (DM) pullik rejimini alohida yoqish yoki o'chirish."""
     inbox = await users.get_inbox(session, user.id)
     if inbox.mode in (InboxMode.PAID, InboxMode.PREMIUM_OR_PAID):
         inbox.mode = InboxMode.OPEN
         await session.commit()
-        await query.answer("⏸ Bot to'xtatildi! Endi hamma sizga bepul va erkin yoza oladi.", show_alert=True)
+        await query.answer("🔴 Shaxsiy chat himoyasi o'chirildi! Endi hamma sizga bepul yoza oladi.", show_alert=True)
     else:
         inbox.mode = InboxMode.PAID
         await session.commit()
-        await query.answer("▶️ Bot faollashtirildi! Pullik himoya va to'lov tizimi yoqildi.", show_alert=True)
+        await query.answer("🟢 Shaxsiy chat himoyasi yoqildi! Faqat to'lov qilganlar yoza oladi.", show_alert=True)
     await render_inbox(query, session, user, _)
 
 
