@@ -9,7 +9,16 @@ from bot.middlewares.user_context import UserContextMiddleware
 
 def setup(dp: Dispatcher) -> None:
     """Middleware'larni to'g'ri tartibda ulaydi."""
-    for observer in (dp.message, dp.callback_query, dp.pre_checkout_query, dp.inline_query):
+    for observer in (
+        dp.message,
+        dp.callback_query,
+        dp.pre_checkout_query,
+        dp.inline_query,
+        dp.business_message,
+        dp.edited_business_message,
+        dp.deleted_business_messages,
+        dp.business_connection,
+    ):
         observer.middleware(DatabaseMiddleware())
         observer.middleware(UserContextMiddleware())
 

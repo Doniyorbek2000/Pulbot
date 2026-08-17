@@ -63,14 +63,29 @@ async def handle_business_connection(event: BusinessConnection, session: AsyncSe
         user.business_connection_id = event.id
         user.business_enabled = event.is_enabled
 
+    # Inbox sozlamalarini ham avtomatik pullik rejimga o'tkazamiz
+    inbox_stmt = select(InboxSettings).where(InboxSettings.user_id == event.user.id)
+    inbox = (await session.execute(inbox_stmt)).scalar_one_or_none()
+    if not inbox:
+        inbox = InboxSettings(
+            user_id=event.user.id,
+            mode=InboxMode.PAID,
+            price_mxtr=58823,
+            session_minutes=1440,
+        )
+        session.add(inbox)
+    elif not inbox.mode or inbox.mode == InboxMode.OPEN:
+        inbox.mode = InboxMode.PAID
+
     await session.commit()
 
     if event.is_enabled:
         text = (
-            f"💼 <b>Telegram Business ulandi!</b>\n\n"
+            f"💼 <b>Telegram Business muvaffaqiyatli ulandi!</b>\n\n"
             f"Endi bot shaxsiy chatlaringizga kelgan yangi xabarlarni avtomatik tarzda "
-            f"nazorat qila oladi va ulardan haq olishingizga yordam beradi.\n\n"
-            f"Shaxsiy narx va sozlamalarni belgilash uchun boshqaruv panelini oching."
+            f"nazorat qiladi va to'lov qilmaganlarga to'lov havolasini yuboradi.\n\n"
+            f"💰 Standart tarif: <b>10,000 so'm / 24 soat</b>\n"
+            f"Shaxsiy narx va sozlamalarni o'zgartirish uchun boshqaruv panelini oching."
         )
         markup = InlineKeyboardMarkup(
             inline_keyboard=[
@@ -138,8 +153,17 @@ async def handle_business_message(message: Message, bot: Bot, session: AsyncSess
     inbox_stmt = select(InboxSettings).where(InboxSettings.user_id == owner.id)
     inbox = (await session.execute(inbox_stmt)).scalar_one_or_none()
 
-    if not inbox or inbox.mode == InboxMode.OPEN:
-        # Hamma uchun ochiq
+    if not inbox:
+        inbox = InboxSettings(
+            user_id=owner.id,
+            mode=InboxMode.PAID,
+            price_mxtr=58823,
+            session_minutes=1440,
+        )
+        session.add(inbox)
+        await session.commit()
+    elif inbox.mode == InboxMode.OPEN:
+        # Hamma uchun ochiq rejimga o'tkazilgan bo'lsa
         return
 
     # 3. Istisnolar (Whitelist / Blacklist) tekshiruvi
@@ -202,7 +226,7 @@ async def handle_business_message(message: Message, bot: Bot, session: AsyncSess
         buttons.append(
             [
                 InlineKeyboardButton(
-                    text="⭐ Telegram Stars / Bot orqali",
+                    text="⭐ Telegram Stars / Balansdan",
                     url=f"https://t.me/{settings.bot_username}?start=pay_{order.id}",
                 )
             ]
