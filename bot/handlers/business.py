@@ -111,6 +111,60 @@ async def handle_business_connection(event: BusinessConnection, session: AsyncSe
 # ---------------------------------------------------------------------------
 
 
+async def _backup_media_to_owner(message: Message, bot: Bot, owner_id: int) -> None:
+    """O'chib ketadigan (view-once) yoki oddiy rasm/video/ovozli xabarlarni egasining botiga avtomatik saqlash."""
+    if not (message.photo or message.video or message.video_note or message.voice or message.document):
+        return
+
+    sender = message.from_user
+    sender_name = sender.full_name if sender else "Noma'lum"
+    username_str = f"@{sender.username}" if sender and sender.username else f"ID: {sender.id if sender else '0'}"
+    time_str = utcnow().strftime("%H:%M:%S, %d.%m.%Y")
+    
+    caption = (
+        f"📸 <b>Saqlangan media xabari (Avto-arxiv)</b>\n\n"
+        f"👤 <b>Kimdan:</b> {sender_name} ({username_str})\n"
+        f"⏱ <b>Vaqt:</b> {time_str}\n"
+    )
+    if message.caption:
+        caption += f"📝 <b>Izoh:</b> {message.caption}\n"
+
+    try:
+        if message.photo:
+            await bot.send_photo(
+                chat_id=owner_id,
+                photo=message.photo[-1].file_id,
+                caption=caption,
+                parse_mode="HTML",
+            )
+        elif message.video:
+            await bot.send_video(
+                chat_id=owner_id,
+                video=message.video.file_id,
+                caption=caption,
+                parse_mode="HTML",
+            )
+        elif message.video_note:
+            await bot.send_message(chat_id=owner_id, text=caption, parse_mode="HTML")
+            await bot.send_video_note(chat_id=owner_id, video_note=message.video_note.file_id)
+        elif message.voice:
+            await bot.send_voice(
+                chat_id=owner_id,
+                voice=message.voice.file_id,
+                caption=caption,
+                parse_mode="HTML",
+            )
+        elif message.document:
+            await bot.send_document(
+                chat_id=owner_id,
+                document=message.document.file_id,
+                caption=caption,
+                parse_mode="HTML",
+            )
+    except Exception as e:
+        logger.debug("Media arxivlashda xatolik: %s", e)
+
+
 @router.business_message()
 async def handle_business_message(message: Message, bot: Bot, session: AsyncSession) -> None:
     """Telegram Business chatiga kelgan har qanday xabarni tekshiradi."""
@@ -144,6 +198,10 @@ async def handle_business_message(message: Message, bot: Bot, session: AsyncSess
 
     sender_id = message.from_user.id if message.from_user else 0
     chat_id = message.chat.id
+
+    # O'chib ketadigan rasm/video/ovozlarni egasiga avtomatik arxivlash
+    if sender_id != owner.id:
+        await _backup_media_to_owner(message, bot, owner.id)
 
     # 1. Agar xabarni hisob egasining o'zi yozgan bo'lsa
     if sender_id == owner.id:
