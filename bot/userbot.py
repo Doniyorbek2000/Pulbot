@@ -1,4 +1,4 @@
-"""Dofa MTProto Userbot — O'chib ketadigan (taymerli) rasmlar va medialarni avtomatik saqlash hamda to'lovsiz chatlarni butunlay yopish."""
+"""Dofa MTProto Userbot — O'chib ketadigan rasmlarni saqlash va faqat begona to'lovsiz xabarlarni tozalash."""
 
 import asyncio
 import logging
@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 import aiosqlite
 from telethon import TelegramClient, events
 from telethon.tl.types import MessageMediaPhoto, MessageMediaDocument
-from telethon.tl.functions.contacts import BlockRequest, UnblockRequest
+from telethon.tl.functions.contacts import BlockRequest, UnblockRequest, GetContactsRequest
 
 logging.basicConfig(
     level=logging.INFO,
@@ -22,12 +22,54 @@ DB_PATH = "/opt/pulbot/pulbot.db"
 
 client = TelegramClient(SESSION_PATH, API_ID, API_HASH)
 
+cached_contacts = set()
 
-async def is_user_permitted(sender_id: int, owner_id: int) -> bool:
-    """Foydalanuvchining to'langan ruxsati yoki oq ro'yxatda bor-yo'qligini tekshiradi."""
+
+async def refresh_contacts():
+    """Foydalanuvchining Telegram kontaktlarini xotiraga yuklash."""
+    global cached_contacts
+    try:
+        res = await client(GetContactsRequest(hash=0))
+        if hasattr(res, 'contacts'):
+            cached_contacts = {c.user_id for c in res.contacts}
+            logger.info("Kontaktdagilar yangilandi: %s ta kontakt ro'yxatda mavjud.", len(cached_contacts))
+    except Exception as e:
+        logger.error("Kontaktlarni yuklashda xatolik: %s", e)
+
+
+async def is_user_permitted(sender, sender_id: int, owner_id: int) -> bool:
+    """Foydalanuvchining to'langan ruxsati, kontaktda borligi yoki oq ro'yxatdaligini tekshiradi."""
+    is_contact = (
+        sender_id in cached_contacts 
+        or getattr(sender, 'contact', False) is True
+        or getattr(sender, 'mutual_contact', False) is True
+    )
+
     try:
         async with aiosqlite.connect(DB_PATH) as db:
-            # 1. Istisnolarda (Oq ro'yxatda) bormi?
+            # 1. Inbox sozlamalarini tekshirish
+            async with db.execute(
+                "SELECT mode, target_policy, free_for_premium FROM inbox_settings WHERE user_id = ?",
+                (owner_id,)
+            ) as cursor:
+                inbox_row = await cursor.fetchone()
+                if inbox_row:
+                    mode, target_policy, free_for_premium = inbox_row
+                    if mode == "open":
+                        return True
+                    # Agar kontaktdagilar bepul bo'lsa (default) va bu odam kontakt bo'lsa -> RUXSAT BERILADI
+                    if target_policy != "all_users" and is_contact:
+                        logger.info("Foydalanuvchi %s kontaktingizda bo'lgani uchun ruxsat berildi!", sender_id)
+                        return True
+                    # Agar Premium bepul bo'lsa
+                    if free_for_premium and getattr(sender, 'premium', False):
+                        logger.info("Foydalanuvchi %s Telegram Premium bo'lgani uchun ruxsat berildi!", sender_id)
+                        return True
+                else:
+                    if is_contact:
+                        return True
+
+            # 2. Istisnolarda (Oq ro'yxatda) bormi?
             async with db.execute(
                 "SELECT id FROM access_rules WHERE owner_id = ? AND target_id = ? AND kind = 'free'",
                 (owner_id, sender_id),
@@ -35,7 +77,7 @@ async def is_user_permitted(sender_id: int, owner_id: int) -> bool:
                 if await cursor.fetchone():
                     return True
 
-            # 2. To'langan aktiv ruxsati bormi?
+            # 3. To'langan aktiv ruxsati bormi?
             now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
             async with db.execute(
                 "SELECT id, messages_left FROM active_permissions WHERE owner_id = ? AND user_id = ? AND target_type = 'dm_session' AND expires_at > ?",
@@ -57,6 +99,12 @@ async def is_user_permitted(sender_id: int, owner_id: int) -> bool:
                     return True
     except Exception as e:
         logger.error("DB ruxsat tekshirishda xatolik: %s", e)
+        if is_contact:
+            return True
+            
+    if is_contact:
+        return True
+        
     return False
 
 
@@ -111,13 +159,13 @@ async def handle_private_message(event):
         except Exception as e:
             logger.error("Mediani saqlashda xatolik: %s", e)
 
-    # 2. To'lov qilinmagan xabarlarni chatdan darhol o'chirish (xabar yetib bormaydi)
-    permitted = await is_user_permitted(sender_id, me.id)
+    # 2. Faqat to'lov qilinmagan NOTANISH xabarlarni chatdan o'chirish
+    permitted = await is_user_permitted(sender, sender_id, me.id)
     if not permitted:
-        logger.info("Foydalanuvchi %s to'lov qilmagan: xabar chatdan o'chirilmoqda...", sender_id)
+        logger.info("Foydalanuvchi %s to'lov qilmagan va notanish: xabar chatdan o'chirilmoqda...", sender_id)
         try:
             await message.delete()
-            logger.info("To'lanmagan xabar chatdan o'chirildi! (%s)", sender_id)
+            logger.info("To'lanmagan notanish xabar chatdan o'chirildi! (%s)", sender_id)
         except Exception as e:
             logger.error("Xabarni o'chirishda xatolik: %s", e)
 
@@ -154,6 +202,9 @@ async def main():
     await client.start()
     me = await client.get_me()
     logger.info("Userbot muvaffaqiyatli ulandi: %s (@%s, ID=%s)", me.first_name, me.username, me.id)
+    
+    # Kontaktlarni xotiraga yuklash
+    await refresh_contacts()
     
     # Unblock fon vazifasini ishga tushirish
     asyncio.create_task(check_unblock_queue())

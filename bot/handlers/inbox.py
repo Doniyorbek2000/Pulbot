@@ -95,7 +95,11 @@ async def render_inbox(
         hold=f"{inbox.hold_hours}h" if inbox.hold_hours else "—",
     )
 
+    is_active = inbox.mode in (InboxMode.PAID, InboxMode.PREMIUM_OR_PAID)
+    status_btn_text = "⏸ Botni to'xtatish (Vaqtincha o'chirish)" if is_active else "▶️ Botni yoqish (Pullik rejim)"
+
     builder = InlineKeyboardBuilder()
+    builder.button(text=status_btn_text, callback_data=InboxCB(action="toggle_pause"))
     builder.button(text="💵 Narxni belgilash", callback_data=InboxCB(action="price"))
     builder.button(text="⏱ Hisoblash usuli (Tarif)", callback_data=InboxCB(action="unit"))
     builder.button(text="🟢 Pul to'lamaydiganlar (Oq ro'yxat)", callback_data=RuleCB(action="list", scope="dm"))
@@ -103,13 +107,30 @@ async def render_inbox(
     builder.button(text="👥 Notanishlar / Kontaktdagilar", callback_data=InboxCB(action="mode"))
     builder.button(text="🧩 Bepul imtiyozlar (Premium/1-xabar)", callback_data=InboxCB(action="extra"))
     builder.button(text=_("common.back"), callback_data=MenuCB(action="home"))
-    builder.adjust(2, 2, 1, 1, 1)
+    builder.adjust(1, 2, 2, 1, 1, 1)
 
     if edit and isinstance(event, CallbackQuery):
         await safe_edit(event, text, builder.as_markup())
     else:
         message = event.message if isinstance(event, CallbackQuery) else event
         await message.answer(text, reply_markup=builder.as_markup())
+
+
+@router.callback_query(InboxCB.filter(F.action == "toggle_pause"))
+async def toggle_pause(
+    query: CallbackQuery, session: AsyncSession, user: User, _: Translator
+) -> None:
+    """Botni vaqtincha to'xtatish yoki qayta yoqish."""
+    inbox = await users.get_inbox(session, user.id)
+    if inbox.mode in (InboxMode.PAID, InboxMode.PREMIUM_OR_PAID):
+        inbox.mode = InboxMode.OPEN
+        await session.commit()
+        await query.answer("⏸ Bot to'xtatildi! Endi hamma sizga bepul va erkin yoza oladi.", show_alert=True)
+    else:
+        inbox.mode = InboxMode.PAID
+        await session.commit()
+        await query.answer("▶️ Bot faollashtirildi! Pullik himoya va to'lov tizimi yoqildi.", show_alert=True)
+    await render_inbox(query, session, user, _)
 
 
 # --------------------------------------------------------------------------
