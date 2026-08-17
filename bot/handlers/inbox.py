@@ -12,6 +12,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from bot.config import settings
 from bot.db.enums import AccessRuleKind, InboxMode, PricingUnit
 from bot.db.models import AccessRule, InboxSchedule, User
 from bot.handlers.common import (
@@ -125,6 +126,7 @@ async def connect_business_guide(
     query: CallbackQuery, session: AsyncSession, user: User, _: Translator
 ) -> None:
     """Telegram Business orqali 1-klikda kodsiz ulanish oynasi."""
+    await query.answer()
     is_connected = bool(user.business_enabled and user.business_connection_id)
     status_text = "🟢 <b>Holat: Profilingizga muvaffaqiyatli ulangan!</b>" if is_connected else "⚪️ <b>Holat: Hali ulanmagan</b>"
 

@@ -273,6 +273,33 @@ async def back_home(
     await query.answer()
 
 
+@router.callback_query(MenuCB.filter(F.action == "connect_biz"))
+async def connect_biz_from_main(
+    query: CallbackQuery, session: AsyncSession, user: User, _: Translator, fmt
+) -> None:
+    """Asosiy oynadan Telegram Business orqali 1-klikda kodsiz ulanish."""
+    await query.answer()
+    is_connected = bool(user.business_enabled and user.business_connection_id)
+    status_text = "🟢 <b>Holat: Profilingizga muvaffaqiyatli ulangan!</b>" if is_connected else "⚪️ <b>Holat: Hali ulanmagan</b>"
+
+    bot_user = settings.bot_username or "dofauz_bot"
+    text = (
+        f"🤖 <b>Telegram Business orqali 1-klikda ulash</b>\n\n"
+        f"{status_text}\n\n"
+        f"Bu usulda hech qanday telefon raqam yoki SMS kod talab qilinmaydi! 100% rasmiy va xavfsiz.\n\n"
+        f"<b>Qanday ulanadi (10 soniya):</b>\n"
+        f"1️⃣ Telegram'da <b>Sozlamalar (Настройки)</b>ga kiring.\n"
+        f"2️⃣ <b>Telegram Business</b> ➡️ <b>Chat-botlar (Чат-боты)</b> bo'limiga kiring.\n"
+        f"3️⃣ Qidiruvga <b>@{bot_user}</b> deb yozing va <b>Ulash (Добавить)</b>ni bosing!\n\n"
+        f"✅ Shundan so'ng bot shaxsiy chatlaringizni to'liq himoya qila boshlaydi!"
+    )
+    builder = InlineKeyboardBuilder()
+    builder.button(text="💼 Telegram Business ga o'tish", url="tg://settings/business")
+    builder.button(text=_("common.back"), callback_data=MenuCB(action="home"))
+    builder.adjust(1, 1)
+    await safe_edit(query, text, builder.as_markup())
+
+
 @router.callback_query(MenuCB.filter(F.action == "toggle_bot"))
 async def toggle_bot_from_main(
     query: CallbackQuery, session: AsyncSession, user: User, _: Translator, fmt

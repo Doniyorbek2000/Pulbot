@@ -25,7 +25,7 @@ def language_keyboard() -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
-def main_menu(_: Translator, *, is_admin: bool = False, is_active: bool = True) -> InlineKeyboardMarkup:
+def main_menu(_: Translator, *, is_admin: bool = False, is_active: bool = True, is_connected: bool = False) -> InlineKeyboardMarkup:
     from aiogram.types import WebAppInfo
 
     builder = InlineKeyboardBuilder()
@@ -33,6 +33,11 @@ def main_menu(_: Translator, *, is_admin: bool = False, is_active: bool = True) 
         builder.button(text="⏸ Butun tizimni to'xtatish (Uzib qo'yish)", callback_data=MenuCB(action="toggle_bot"))
     else:
         builder.button(text="▶️ Butun tizimni yoqish (Faollashtirish)", callback_data=MenuCB(action="toggle_bot"))
+
+    if is_connected:
+        builder.button(text="🟢 Profilga ulangan (Telegram Business)", callback_data=MenuCB(action="connect_biz"))
+    else:
+        builder.button(text="🤖 Profilga ulash (Kodsiz / 1-klikda)", callback_data=MenuCB(action="connect_biz"))
 
     if settings.webapp_base_url and settings.webapp_base_url.startswith("https://"):
         builder.button(
@@ -47,7 +52,7 @@ def main_menu(_: Translator, *, is_admin: bool = False, is_active: bool = True) 
     builder.button(text=_("menu.help"), callback_data=MenuCB(action="help"))
     if is_admin:
         builder.button(text=_("menu.admin"), callback_data=MenuCB(action="admin"))
-    builder.adjust(1, 1, 2, 2, 2)
+    builder.adjust(1, 1, 1, 2, 2, 2)
     return builder.as_markup()
 
 
