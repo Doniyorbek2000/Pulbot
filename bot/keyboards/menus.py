@@ -30,9 +30,9 @@ def main_menu(_: Translator, *, is_admin: bool = False, is_active: bool = True) 
 
     builder = InlineKeyboardBuilder()
     if is_active:
-        builder.button(text="⏸ Botni to'xtatish (Hamma bepul yozsin)", callback_data=MenuCB(action="toggle_bot"))
+        builder.button(text="⏸ Butun tizimni to'xtatish (Uzib qo'yish)", callback_data=MenuCB(action="toggle_bot"))
     else:
-        builder.button(text="▶️ Botni yoqish (Pullik rejim)", callback_data=MenuCB(action="toggle_bot"))
+        builder.button(text="▶️ Butun tizimni yoqish (Faollashtirish)", callback_data=MenuCB(action="toggle_bot"))
 
     if settings.webapp_base_url and settings.webapp_base_url.startswith("https://"):
         builder.button(

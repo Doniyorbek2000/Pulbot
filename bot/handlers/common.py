@@ -48,10 +48,8 @@ async def render_main_menu(
     *,
     edit: bool = True,
 ) -> None:
-    from bot.db.enums import InboxMode
     balance_mxtr, _available = await wallet.balance(session, user.id)
-    inbox = await users.get_inbox(session, user.id)
-    is_active = inbox.mode in (InboxMode.PAID, InboxMode.PREMIUM_OR_PAID)
+    is_active = bool(user.business_enabled)
 
     text = _(
         "menu.title",

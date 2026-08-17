@@ -277,17 +277,14 @@ async def back_home(
 async def toggle_bot_from_main(
     query: CallbackQuery, session: AsyncSession, user: User, _: Translator, fmt
 ) -> None:
-    """Asosiy menyudan botni to'liq to'xtatish yoki yoqish."""
-    from bot.db.enums import InboxMode
-    inbox = await users.get_inbox(session, user.id)
-    if inbox.mode in (InboxMode.PAID, InboxMode.PREMIUM_OR_PAID):
-        inbox.mode = InboxMode.OPEN
-        await session.commit()
-        await query.answer("⏸ Bot to'xtatildi! Endi boshqa odamlar yozgan xabarlar o'chirilmaydi va bepul bo'ladi.", show_alert=True)
+    """Asosiy menyudan butun bot tizimini to'liq to'xtatish yoki yoqish (Master switch)."""
+    user.business_enabled = not bool(user.business_enabled)
+    await session.commit()
+
+    if user.business_enabled:
+        await query.answer("▶️ Butun bot tizimi yoqildi va faollashtirildi!", show_alert=True)
     else:
-        inbox.mode = InboxMode.PAID
-        await session.commit()
-        await query.answer("▶️ Bot yoqildi! Pullik xabarlar va himoya faollashtirildi.", show_alert=True)
+        await query.answer("⏸ Butun bot tizimi to'liq to'xtatildi (uzildi)!", show_alert=True)
     await render_main_menu(query, session, user, _, fmt)
 
 

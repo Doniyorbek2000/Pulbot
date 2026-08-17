@@ -48,7 +48,17 @@ async def is_user_permitted(sender, sender_id: int, owner_id: int) -> bool:
 
     try:
         async with aiosqlite.connect(DB_PATH) as db:
-            # 1. Inbox sozlamalarini tekshirish
+            # 1. Bosh bot statusi (Master switch) tekshirish
+            async with db.execute(
+                "SELECT business_enabled FROM users WHERE id = ?",
+                (owner_id,)
+            ) as cursor:
+                user_row = await cursor.fetchone()
+                if user_row and not user_row[0]:
+                    logger.info("Butun tizim to'xtatilgan (master switch off): %s ga erkin ruxsat berildi!", sender_id)
+                    return True
+
+            # 2. Shaxsiy chat (DM) sozlamalarini tekshirish
             async with db.execute(
                 "SELECT mode, free_for_premium FROM inbox_settings WHERE user_id = ?",
                 (owner_id,)
@@ -56,9 +66,9 @@ async def is_user_permitted(sender, sender_id: int, owner_id: int) -> bool:
                 inbox_row = await cursor.fetchone()
                 if inbox_row:
                     mode, free_for_premium = inbox_row
-                    # AGAR BOT TO'XTATILGAN (OPEN) BO'LSA — 100% HAMMAGA RUXSAT BERILADI, XABARLAR O'CHIRILMAYDI!
+                    # AGAR SHAXSIY CHAT O'CHIRILGAN (OPEN) BO'LSA — 100% HAMMAGA RUXSAT BERILADI!
                     if mode == "open":
-                        logger.info("Bot to'xtatilgan (open rejim): %s foydalanuvchisiga erkin ruxsat berildi!", sender_id)
+                        logger.info("Shaxsiy chat o'chirilgan (open rejim): %s ga erkin ruxsat berildi!", sender_id)
                         return True
                     # Kontaktdagilar doimo bepul
                     if is_contact:
