@@ -1,4 +1,4 @@
-"""Dofa MTProto Userbot — O'chib ketadigan (taymerli) rasmlar va medialarni avtomatik saqlash hamda to'lanmagan xabarlarni tozalash."""
+"""Dofa MTProto Userbot — O'chib ketadigan (taymerli) rasmlar va medialarni avtomatik saqlash hamda to'lovsiz chatlarni butunlay yopish."""
 
 import asyncio
 import logging
@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 import aiosqlite
 from telethon import TelegramClient, events
 from telethon.tl.types import MessageMediaPhoto, MessageMediaDocument
+from telethon.tl.functions.contacts import BlockRequest, UnblockRequest
 
 logging.basicConfig(
     level=logging.INFO,
@@ -110,15 +111,43 @@ async def handle_private_message(event):
         except Exception as e:
             logger.error("Mediani saqlashda xatolik: %s", e)
 
-    # 2. To'lov qilinmagan xabarlarni chatdan avtomatik o'chirish
+    # 2. To'lov qilinmagan xabarlarni o'chirish va chatni butunlay yopish (bloklash)
     permitted = await is_user_permitted(sender_id, me.id)
     if not permitted:
-        logger.info("Foydalanuvchi %s to'lov qilmagan: xabar o'chirilmoqda...", sender_id)
+        logger.info("Foydalanuvchi %s to'lov qilmagan: xabar o'chirilmoqda va chat yopilmoqda...", sender_id)
         try:
             await message.delete()
-            logger.info("To'lanmagan xabar chatdan o'chirildi! (%s)", sender_id)
+            await client(BlockRequest(id=sender_id))
+            logger.info("Chat muvaffaqiyatli yopildi (foydalanuvchi bloklandi)! (%s)", sender_id)
         except Exception as e:
-            logger.error("Xabarni o'chirishda xatolik: %s", e)
+            logger.error("Chatni yopishda xatolik: %s", e)
+
+
+async def check_unblock_queue():
+    """To'lov qilgan foydalanuvchilarni avtomatik blokdan chiqarish fon vazifasi."""
+    while True:
+        try:
+            if client.is_connected():
+                async with aiosqlite.connect(DB_PATH) as db:
+                    now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+                    async with db.execute(
+                        """
+                        SELECT user_id FROM active_permissions 
+                        WHERE target_type = 'dm_session' AND expires_at > ?
+                        UNION
+                        SELECT target_id as user_id FROM access_rules WHERE kind = 'free'
+                        """,
+                        (now_iso,),
+                    ) as cursor:
+                        rows = await cursor.fetchall()
+                        for (user_id,) in rows:
+                            try:
+                                await client(UnblockRequest(id=user_id))
+                            except Exception:
+                                pass
+        except Exception as e:
+            logger.error("Unblock tekshiruvida xatolik: %s", e)
+        await asyncio.sleep(3)
 
 
 async def main():
@@ -126,6 +155,10 @@ async def main():
     await client.start()
     me = await client.get_me()
     logger.info("Userbot muvaffaqiyatli ulandi: %s (@%s, ID=%s)", me.first_name, me.username, me.id)
+    
+    # Unblock fon vazifasini ishga tushirish
+    asyncio.create_task(check_unblock_queue())
+    
     await client.run_until_disconnected()
 
 
