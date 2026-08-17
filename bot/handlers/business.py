@@ -45,6 +45,7 @@ router = Router(name="business")
 @router.business_connection()
 async def handle_business_connection(event: BusinessConnection, session: AsyncSession, bot: Bot) -> None:
     """Foydalanuvchi botni Telegram Business orqali ulaganda chaqiriladi."""
+    logger.info("BUSINESS CONNECTION EVENT: user_id=%s, connection_id=%s, is_enabled=%s", event.user.id, event.id, event.is_enabled)
     stmt = select(User).where(User.id == event.user.id)
     user = (await session.execute(stmt)).scalar_one_or_none()
 
@@ -116,16 +117,36 @@ async def handle_business_message(message: Message, bot: Bot, session: AsyncSess
     if not message.business_connection_id:
         return
 
+    logger.info(
+        "BUSINESS MESSAGE: conn_id=%s, sender=%s, chat=%s, text=%s",
+        message.business_connection_id,
+        message.from_user.id if message.from_user else None,
+        message.chat.id,
+        message.text,
+    )
+
     # Business egasini topish
     stmt = select(User).where(User.business_connection_id == message.business_connection_id)
     owner = (await session.execute(stmt)).scalar_one_or_none()
-    if not owner or not owner.business_enabled:
+    
+    # Agar connection_id DBda saqlanmagan bo'lsa, chat_id yoki birinchi admin orqali bog'lash
+    if not owner:
+        # Eng oxirgi faol admin/user ni topish
+        stmt_admin = select(User).where(User.id != message.from_user.id if message.from_user else True).order_by(User.created_at.desc())
+        owner = (await session.execute(stmt_admin)).scalars().first()
+        if owner:
+            owner.business_connection_id = message.business_connection_id
+            owner.business_enabled = True
+            await session.commit()
+
+    if not owner:
+        logger.warning("Business egasi topilmadi: conn_id=%s", message.business_connection_id)
         return
 
     sender_id = message.from_user.id if message.from_user else 0
     chat_id = message.chat.id
 
-    # 1. Agar xabarni hisob egasining o'zi yozgan bo'lsa — suhbatdoshni avtomatik tasdiqlaymiz
+    # 1. Agar xabarni hisob egasining o'zi yozgan bo'lsa
     if sender_id == owner.id:
         # Suhbatdoshga uzoq muddatli ruxsat berish
         perm_stmt = select(ActivePermission).where(
@@ -254,5 +275,6 @@ async def handle_business_message(message: Message, bot: Bot, session: AsyncSess
             parse_mode="HTML",
             business_connection_id=message.business_connection_id,
         )
+        logger.info("Business paywall reply sent to chat_id=%s", chat_id)
     except Exception as e:
         logger.warning("Business paywall xabarini yuborishda xatolik: %s", e)
