@@ -244,7 +244,10 @@ async def handle_business_message(message: Message, bot: Bot, session: AsyncSess
         # Hamma uchun ochiq rejimga o'tkazilgan bo'lsa
         return
 
-    # 3. Istisnolar (Whitelist / Blacklist) tekshiruvi
+    # 3. Istisnolar (Whitelist / Premium / Blacklist) tekshiruvi
+    if inbox.free_for_premium and message.from_user and message.from_user.is_premium:
+        return  # Telegram Premium foydalanuvchisi uchun bepul
+
     rule_stmt = select(AccessRule).where(
         AccessRule.owner_id == owner.id,
         AccessRule.target_id == sender_id,
@@ -252,7 +255,7 @@ async def handle_business_message(message: Message, bot: Bot, session: AsyncSess
     rule = (await session.execute(rule_stmt)).scalar_one_or_none()
     if rule:
         if rule.kind == AccessRuleKind.FREE:
-            return  # Oq ro'yxatda, bepul
+            return  # Oq ro'yxatda (istisnolarda), bepul
         if rule.kind == AccessRuleKind.BLOCKED:
             return
 
